@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Loader, Plus, Search, ArrowRight, FolderKanban, CalendarDays, CheckCircle2, Pencil, X } from 'lucide-react';
+import { Check, Loader, Plus, Search, ArrowRight, FolderKanban, CalendarDays, CheckCircle2, Pencil, Trash2, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,7 +28,7 @@ export default function ProjectsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'in_progress' | 'completed'>('all');
 
-    // Dialog & Form state
+    // Dialog & Form state for Create / Edit
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingProject, setEditingProject] = useState<PROJECT_TYPE | null>(null);
     const [formData, setFormData] = useState<{
@@ -42,6 +42,10 @@ export default function ProjectsPage() {
         isClosed: false,
         participants: [],
     });
+
+    // State for Delete Confirmation Dialog
+    const [deletingProject, setDeletingProject] = useState<PROJECT_TYPE | null>(null);
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
     const handleOpenCreate = () => {
         setEditingProject(null);
@@ -67,6 +71,21 @@ export default function ProjectsPage() {
         setIsDialogOpen(true);
     };
 
+    const handleOpenDeleteProject = (pro: PROJECT_TYPE, e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDeletingProject(pro);
+        setIsDeleteConfirmOpen(true);
+    };
+
+    const handleConfirmDeleteProject = () => {
+        if (deletingProject) {
+            setProjects((prev) => prev.filter((p) => p.projectId !== deletingProject.projectId));
+            setDeletingProject(null);
+            setIsDeleteConfirmOpen(false);
+        }
+    };
+
     const handleSaveProject = () => {
         if (!formData.projectName.trim()) return;
 
@@ -76,13 +95,13 @@ export default function ProjectsPage() {
                 prev.map((p) =>
                     p.projectId === editingProject.projectId
                         ? {
-                            ...p,
-                            projectName: formData.projectName.trim(),
-                            projectDescription: formData.projectDescription.trim(),
-                            isClosed: formData.isClosed,
-                            closedAt: formData.isClosed ? new Date().toISOString() : null,
-                            participants: formData.participants,
-                        }
+                              ...p,
+                              projectName: formData.projectName.trim(),
+                              projectDescription: formData.projectDescription.trim(),
+                              isClosed: formData.isClosed,
+                              closedAt: formData.isClosed ? new Date().toISOString() : null,
+                              participants: formData.participants,
+                          }
                         : p
                 )
             );
@@ -145,30 +164,33 @@ export default function ProjectsPage() {
                             <button
                                 type="button"
                                 onClick={() => setStatusFilter('all')}
-                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${statusFilter === 'all'
-                                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                                    : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-                                    }`}
+                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                                    statusFilter === 'all'
+                                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                                        : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                                }`}
                             >
                                 All ({projects.length})
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setStatusFilter('in_progress')}
-                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${statusFilter === 'in_progress'
-                                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                                    : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-                                    }`}
+                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                                    statusFilter === 'in_progress'
+                                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                                        : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                                }`}
                             >
                                 Active
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setStatusFilter('completed')}
-                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${statusFilter === 'completed'
-                                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                                    : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-                                    }`}
+                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                                    statusFilter === 'completed'
+                                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                                        : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                                }`}
                             >
                                 Completed
                             </button>
@@ -244,6 +266,16 @@ export default function ProjectsPage() {
                                                         title="Edit project"
                                                     >
                                                         <Pencil size={13} />
+                                                    </button>
+
+                                                    {/* Red Delete Icon Button */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => handleOpenDeleteProject(pro, e)}
+                                                        className="p-1 rounded-md text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+                                                        title="Delete project"
+                                                    >
+                                                        <Trash2 size={13} />
                                                     </button>
                                                 </div>
                                             </div>
@@ -381,6 +413,43 @@ export default function ProjectsPage() {
                             title="Save Project"
                         >
                             <Check size={16} />
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal Dialog for Project Delete Confirmation */}
+            <Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+                <DialogContent className="sm:max-w-[420px] p-6">
+                    <DialogHeader>
+                        <DialogTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                            <Trash2 size={18} className="text-rose-600 dark:text-rose-400" />
+                            Delete Project
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="py-2 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        Are you sure you want to delete <strong className="text-zinc-900 dark:text-zinc-100">{deletingProject?.projectName}</strong>? This action cannot be undone and will remove all project data.
+                    </div>
+
+                    <DialogFooter className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsDeleteConfirmOpen(false)}
+                            className="h-8 border-rose-200 hover:border-rose-300 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:border-rose-900/60 dark:hover:bg-rose-950/40 text-xs font-medium cursor-pointer"
+                            title="Cancel"
+                        >
+                            <X size={16} />
+                        </Button>
+                        <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleConfirmDeleteProject}
+                            className="h-8 bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium cursor-pointer flex items-center gap-1"
+                        >
+                            <Trash2 size={14} /> Delete
                         </Button>
                     </DialogFooter>
                 </DialogContent>
