@@ -30,8 +30,10 @@ import { columnData, taskData } from '@/dummyData/tasks'
 export default function KanbanBoard() {
     const projects: PROJECT_TYPE[] = getProjects()
     const { projectId } = useParams()
+    const [mounted, setMounted] = useState(false)
 
     React.useEffect(() => {
+        setMounted(true)
         const mainContentElem = document.getElementById('main-content');
         if (mainContentElem) mainContentElem.style.overflow = 'hidden'
     }, [])
@@ -49,14 +51,16 @@ export default function KanbanBoard() {
     const getMaxWidthClass = () => {
         if (isMobile) return "max-w-full"
         return open ? "max-w-[calc(100vw-266px)]" : "max-w-[calc(100vw-58px)]"
-        // Note: 256px layout config setup configuration mapping runtime dependency setup checks
     }
 
-    const [columns, setColumns] = useState<ColumnType[]>([])
-    const [tasks, setTasks] = useState<TaskType[]>([])
+    const [columns, setColumns] = useState<ColumnType[]>(columnData)
+    const [tasks, setTasks] = useState<TaskType[]>(taskData)
 
     const [activeColumn, setActiveColumn] = useState<ColumnType | null>(null)
     const [activeTask, setActiveTask] = useState<TaskType | null>(null)
+
+    // Global single active edit ID across entire board (e.g. 'newtask-1' or 'card-task-123')
+    const [activeEditId, setActiveEditId] = useState<string | number | null>(null)
 
     // Store state before drag starts to restore on drag cancel / drop outside
     const [clonedColumns, setClonedColumns] = useState<ColumnType[] | null>(null)
@@ -90,7 +94,7 @@ export default function KanbanBoard() {
         [activeColumn]
     )
 
-    // Handlers to Create Column / Tasks
+    // Handlers to Create Column / Tasks / Update Tasks
     const createNewSection = (newSection: string): void => {
         const id = `col-${Date.now()}`
         setColumns([...columns, { id, title: newSection }])
@@ -98,6 +102,14 @@ export default function KanbanBoard() {
 
     const handleCreateTask = (newTask: TaskType) => {
         setTasks([...tasks, newTask])
+    }
+
+    const handleUpdateTask = (updatedTask: TaskType) => {
+        setTasks((prev) => prev.map((t) => (t.taskId === updatedTask.taskId ? updatedTask : t)))
+    }
+
+    const handleDeleteTask = (taskId: string | number) => {
+        setTasks((prev) => prev.filter((t) => t.taskId !== taskId))
     }
 
     // Drag Handlers
@@ -246,22 +258,28 @@ export default function KanbanBoard() {
                             <BoardColumn
                                 key={col.id}
                                 column={col}
-                                tasks={tasks.filter((t) => t.columnId === col.id)}
+                                tasks={tasks.filter((t) => t.columnId?.toString() === col.id?.toString())}
                                 onCreateTask={handleCreateTask}
+                                onUpdateTask={handleUpdateTask}
+                                onDeleteTask={handleDeleteTask}
+                                activeEditId={activeEditId}
+                                setActiveEditId={setActiveEditId}
                             />
                         ))}
                     </SortableContext>
                     <NewSection createNewSection={createNewSection} />
 
                     {/* Smooth Floating Overlay Portal */}
-                    {typeof window !== 'undefined' &&
+                    {mounted && typeof window !== 'undefined' &&
                         createPortal(
                             <DragOverlay dropAnimation={{ duration: 200, easing: 'cubic-bezier(0.18, 0.89, 0.32, 1.28)' }}>
                                 {activeColumn && (
                                     <BoardColumn
                                         column={activeColumn}
-                                        tasks={tasks.filter((t) => t.columnId === activeColumn.id)}
+                                        tasks={tasks.filter((t) => t.columnId?.toString() === activeColumn.id?.toString())}
                                         onCreateTask={handleCreateTask}
+                                        onUpdateTask={handleUpdateTask}
+                                        onDeleteTask={handleDeleteTask}
                                         isOverlay
                                     />
                                 )}

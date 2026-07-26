@@ -11,10 +11,23 @@ interface Props {
     column: ColumnType;
     tasks: TaskType[];
     onCreateTask: (newTask: TaskType) => void;
+    onUpdateTask?: (updatedTask: TaskType) => void;
+    onDeleteTask?: (taskId: string | number) => void;
     isOverlay?: boolean;
+    activeEditId?: string | number | null;
+    setActiveEditId?: (id: string | number | null) => void;
 }
 
-export default function BoardColumn({ column, tasks, onCreateTask, isOverlay }: Props) {
+export default function BoardColumn({
+    column,
+    tasks,
+    onCreateTask,
+    onUpdateTask,
+    onDeleteTask,
+    isOverlay,
+    activeEditId,
+    setActiveEditId,
+}: Props) {
     const taskIds = tasks.map((t) => t?.taskId)
 
     const {
@@ -58,7 +71,7 @@ export default function BoardColumn({ column, tasks, onCreateTask, isOverlay }: 
                 </div>
                 <div className="flex-1 space-y-2 pr-1 min-h-[100px]">
                     {tasks?.map((task) => (
-                        <TaskCard key={task?.taskId} task={task} />
+                        <TaskCard key={task?.taskId} task={task} column={column} isOverlay />
                     ))}
                 </div>
             </div>
@@ -82,7 +95,7 @@ export default function BoardColumn({ column, tasks, onCreateTask, isOverlay }: 
             className="w-[300px] min-w-[300px] bg-zinc-50/50 dark:bg-zinc-900/50 border border-zinc-200/80 rounded-xl flex flex-col p-4"
         >
             {/* Column Header */}
-            <div className="flex items-center justify-between mb-4 pb-2 border-b border-zinc-100">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-zinc-100 dark:border-zinc-800">
                 <div className="flex items-center gap-2">
                     <button
                         {...attributes}
@@ -95,7 +108,7 @@ export default function BoardColumn({ column, tasks, onCreateTask, isOverlay }: 
                         {column?.title}
                     </h3>
                 </div>
-                <span className="text-xs bg-zinc-200/60 dark:bg-zinc-800 px-2 py-0.5 rounded-full font-medium text-zinc-600">
+                <span className="text-xs bg-zinc-200/60 dark:bg-zinc-800 px-2 py-0.5 rounded-full font-medium text-zinc-600 dark:text-zinc-400">
                     {tasks?.length}
                 </span>
             </div>
@@ -104,13 +117,26 @@ export default function BoardColumn({ column, tasks, onCreateTask, isOverlay }: 
             <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar min-h-[100px]">
                 <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
                     {tasks?.map((task) => (
-                        <TaskCard key={task?.taskId} task={task} />
+                        <TaskCard
+                            key={task?.taskId}
+                            task={task}
+                            column={column}
+                            onUpdateTask={onUpdateTask}
+                            onDeleteTask={onDeleteTask}
+                            activeEditId={activeEditId}
+                            setActiveEditId={setActiveEditId}
+                        />
                     ))}
                 </SortableContext>
             </div>
 
             <div className={tasks?.length > 0 ? 'pt-2' : ''}>
-                <NewTask column={column} onCreateTask={onCreateTask} />
+                <NewTask
+                    column={column}
+                    onCreateTask={onCreateTask}
+                    activeEditId={activeEditId}
+                    setActiveEditId={setActiveEditId}
+                />
             </div>
         </div>
     );

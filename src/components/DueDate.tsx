@@ -100,6 +100,15 @@ export const DueDate: FC<DueDateProps> = ({ name, value = '', onChange }) => {
     // Formatted display text for trigger button
     const formatDisplayDate = (dateStr: string) => {
         if (!dateStr) return '';
+        const parts = dateStr.split(' ')[0].split('-');
+        if (parts.length === 3) {
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const day = parseInt(parts[2], 10);
+            if (!isNaN(year) && !isNaN(month) && !isNaN(day) && MONTH_NAMES[month]) {
+                return `${day} ${MONTH_NAMES[month].slice(0, 3)}`;
+            }
+        }
         const d = new Date(dateStr);
         if (isNaN(d.getTime())) return dateStr;
         const day = d.getDate();
