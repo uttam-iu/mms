@@ -76,13 +76,13 @@ export default function ProjectsPage() {
                 prev.map((p) =>
                     p.projectId === editingProject.projectId
                         ? {
-                              ...p,
-                              projectName: formData.projectName.trim(),
-                              projectDescription: formData.projectDescription.trim(),
-                              isClosed: formData.isClosed,
-                              closedAt: formData.isClosed ? new Date().toISOString() : null,
-                              participants: formData.participants,
-                          }
+                            ...p,
+                            projectName: formData.projectName.trim(),
+                            projectDescription: formData.projectDescription.trim(),
+                            isClosed: formData.isClosed,
+                            closedAt: formData.isClosed ? new Date().toISOString() : null,
+                            participants: formData.participants,
+                        }
                         : p
                 )
             );
@@ -124,10 +124,10 @@ export default function ProjectsPage() {
     });
 
     return (
-        <div className="min-h-screen bg-zinc-50/50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col font-sans">
-            {/* Page Header & Filter Controls */}
-            <div className="pt-2 max-w-7xl mx-auto w-full space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-zinc-200/80 dark:border-zinc-800">
+        <div className="h-[calc(100vh-56px)] flex flex-col bg-zinc-50/50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans overflow-hidden">
+            {/* Sticky Filter Controls Header */}
+            <div className="sticky top-0 z-10 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md p-2 border-b border-zinc-200/80 dark:border-zinc-800 shrink-0">
+                <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-3 flex-wrap">
                         {/* Search Bar */}
                         <div className="relative w-64">
@@ -145,33 +145,30 @@ export default function ProjectsPage() {
                             <button
                                 type="button"
                                 onClick={() => setStatusFilter('all')}
-                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                                    statusFilter === 'all'
-                                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                                        : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-                                }`}
+                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${statusFilter === 'all'
+                                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                                    : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                                    }`}
                             >
                                 All ({projects.length})
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setStatusFilter('in_progress')}
-                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                                    statusFilter === 'in_progress'
-                                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                                        : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-                                }`}
+                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${statusFilter === 'in_progress'
+                                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                                    : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                                    }`}
                             >
                                 Active
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setStatusFilter('completed')}
-                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                                    statusFilter === 'completed'
-                                        ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
-                                        : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-                                }`}
+                                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${statusFilter === 'completed'
+                                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-xs'
+                                    : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                                    }`}
                             >
                                 Completed
                             </button>
@@ -188,97 +185,101 @@ export default function ProjectsPage() {
                         <Plus size={14} /> New Project
                     </Button>
                 </div>
+            </div>
 
-                {/* Projects Grid */}
-                {filteredProjects.length === 0 ? (
-                    <div className="p-12 text-center bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-                        <FolderKanban size={32} className="mx-auto text-zinc-300 dark:text-zinc-700" />
-                        <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">No projects found</h3>
-                        <p className="text-xs text-zinc-400">Try adjusting your search filter or create a new project.</p>
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                                setSearchQuery('');
-                                setStatusFilter('all');
-                            }}
-                            className="text-xs"
-                        >
-                            Reset Filter
-                        </Button>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {filteredProjects.map((pro: PROJECT_TYPE) => (
-                            <Link href={`/projects/${pro.projectId}`} key={pro.projectId} className="group block">
-                                <Card className="h-full bg-white dark:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800/80 shadow-2xs hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 flex flex-col justify-between overflow-hidden relative">
-                                    <CardHeader className="pb-3 space-y-2">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <CardTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors line-clamp-1">
-                                                {pro.projectName}
-                                            </CardTitle>
-                                            <div className="flex items-center gap-1.5 shrink-0">
-                                                {pro.isClosed ? (
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60 text-[10px] font-semibold px-2 py-0.5"
+            {/* Scrollable Projects Container */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar pt-4 px-4">
+                <div className="max-w-7xl mx-auto w-full">
+                    {filteredProjects.length === 0 ? (
+                        <div className="p-6 text-center bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+                            <FolderKanban size={32} className="mx-auto text-zinc-300 dark:text-zinc-700" />
+                            <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">No projects found</h3>
+                            <p className="text-xs text-zinc-400">Try adjusting your search filter or create a new project.</p>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                    setSearchQuery('');
+                                    setStatusFilter('all');
+                                }}
+                                className="text-xs"
+                            >
+                                Reset Filter
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-8">
+                            {filteredProjects.map((pro: PROJECT_TYPE) => (
+                                <Link href={`/projects/${pro.projectId}`} key={pro.projectId} className="group block">
+                                    <Card className="h-full bg-white dark:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800/80 shadow-2xs hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 flex flex-col justify-between overflow-hidden relative">
+                                        <CardHeader className="pb-3 space-y-2">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <CardTitle className="text-base font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors line-clamp-1">
+                                                    {pro.projectName}
+                                                </CardTitle>
+                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                    {pro.isClosed ? (
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60 text-[10px] font-semibold px-2 py-0.5"
+                                                        >
+                                                            <CheckCircle2 size={11} className="mr-1 text-emerald-600" />
+                                                            Done
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800/60 text-[10px] font-semibold px-2 py-0.5"
+                                                        >
+                                                            <Loader size={11} className="mr-1 animate-spin text-amber-600" />
+                                                            In Progress
+                                                        </Badge>
+                                                    )}
+
+                                                    {/* Edit Pencil Button */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => handleOpenEdit(pro, e)}
+                                                        className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+                                                        title="Edit project"
                                                     >
-                                                        <CheckCircle2 size={11} className="mr-1 text-emerald-600" />
-                                                        Done
-                                                    </Badge>
-                                                ) : (
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800/60 text-[10px] font-semibold px-2 py-0.5"
-                                                    >
-                                                        <Loader size={11} className="mr-1 animate-spin text-amber-600" />
-                                                        In Progress
-                                                    </Badge>
-                                                )}
-
-                                                {/* Edit Pencil Button */}
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => handleOpenEdit(pro, e)}
-                                                    className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
-                                                    title="Edit project"
-                                                >
-                                                    <Pencil size={13} />
-                                                </button>
+                                                        <Pencil size={13} />
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                        {pro.projectDescription && (
-                                            <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 font-normal leading-relaxed">
-                                                {pro.projectDescription}
-                                            </p>
-                                        )}
-                                    </CardHeader>
+                                            {pro.projectDescription && (
+                                                <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 font-normal leading-relaxed">
+                                                    {pro.projectDescription}
+                                                </p>
+                                            )}
+                                        </CardHeader>
 
-                                    <CardContent className="py-2 space-y-3">
-                                        <div className="flex items-center justify-between text-[11px] text-zinc-400">
-                                            <div className="flex items-center gap-1.5">
-                                                <CalendarDays size={12} />
-                                                <span>Created {pro.createdAt?.split(' ')?.[0] || '2026-07-12'}</span>
+                                        <CardContent className="py-2 space-y-3">
+                                            <div className="flex items-center justify-between text-[11px] text-zinc-400">
+                                                <div className="flex items-center gap-1.5">
+                                                    <CalendarDays size={12} />
+                                                    <span>Created {pro.createdAt?.split(' ')?.[0] || '2026-07-12'}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                    Operational
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                Operational
-                                            </div>
-                                        </div>
-                                    </CardContent>
+                                        </CardContent>
 
-                                    <CardFooter className="pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
-                                        <MyAvatarGroup users={pro.participants || []} maxItem={4} />
-                                        <div className="text-xs font-semibold text-teal-600 dark:text-teal-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                                            <span>Open Board</span>
-                                            <ArrowRight size={13} />
-                                        </div>
-                                    </CardFooter>
-                                </Card>
-                            </Link>
-                        ))}
-                    </div>
-                )}
+                                        <CardFooter className="pt-3 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
+                                            <MyAvatarGroup users={pro.participants || []} maxItem={4} />
+                                            <div className="text-xs font-semibold text-teal-600 dark:text-teal-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                                                <span>Open Board</span>
+                                                <ArrowRight size={13} />
+                                            </div>
+                                        </CardFooter>
+                                    </Card>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Modal Dialog for Project Create / Edit */}
