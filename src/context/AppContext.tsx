@@ -2,12 +2,15 @@
 
 import { PROJECT_TYPE } from '@/types/project.types';
 import { USER_TYPE } from '@/types/user.types';
+import { ChatTarget } from '@/types/chat.types';
 import { createContext, useContext, useState, ReactNode } from 'react';
 
 interface AppState {
     user: USER_TYPE | null;
     theme: 'light' | 'dark';
     project: PROJECT_TYPE | null;
+    activeChatTarget: ChatTarget | null;
+    isChatOpen: boolean;
 }
 
 interface AppContextType {
@@ -15,6 +18,9 @@ interface AppContextType {
     setUser: (user: USER_TYPE | null) => void;
     setProject: (project: PROJECT_TYPE | null) => void;
     toggleTheme: (theme: 'light' | 'dark') => void;
+    openChat: (target: ChatTarget) => void;
+    closeChat: () => void;
+    updateActiveChatTarget: (updatedTarget: ChatTarget) => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -24,6 +30,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         user: null,
         theme: 'light',
         project: null,
+        activeChatTarget: null,
+        isChatOpen: false,
     });
 
     const setUser = (user: USER_TYPE | null): void => {
@@ -41,8 +49,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }));
     };
 
+    const openChat = (target: ChatTarget): void => {
+        setState((prev) => ({
+            ...prev,
+            activeChatTarget: target,
+            isChatOpen: true,
+        }));
+    };
+
+    const closeChat = (): void => {
+        setState((prev) => ({
+            ...prev,
+            isChatOpen: false,
+        }));
+    };
+
+    const updateActiveChatTarget = (updatedTarget: ChatTarget): void => {
+        setState((prev) => ({
+            ...prev,
+            activeChatTarget: updatedTarget,
+        }));
+    };
+
     return (
-        <AppContext.Provider value={{ state, setUser, setProject, toggleTheme }}>
+        <AppContext.Provider value={{ state, setUser, setProject, toggleTheme, openChat, closeChat, updateActiveChatTarget }}>
             {children}
         </AppContext.Provider>
     );
@@ -50,9 +80,5 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
 export function useAppState() {
     const context = useContext(AppContext);
-    if (context === undefined) {
-        console.log('context')
-        // throw new Error('useAppState must be used within an AppProvider');
-    }
     return context;
 }

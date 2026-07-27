@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { cookies } from "next/headers";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/ui/app-sidebar";
+import FloatingChatWindow from "@/components/FloatingChatWindow";
 import { AppProvider } from "@/context/AppContext";
 
 const raleway = Raleway({ subsets: ['latin'], variable: '--font-sans' });
@@ -50,6 +51,7 @@ export default async function RootLayout({
                   {children}
                 </div>
               </main>
+              <FloatingChatWindow />
             </SidebarProvider>
             : <div className="min-h-screen bg-background">{children}</div>}
         </AppProvider>
