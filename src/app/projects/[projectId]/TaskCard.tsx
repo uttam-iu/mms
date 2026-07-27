@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import MyAvatarGroup from '@/components/MyAvatarGroup';
 import { AttachmentType, ColumnType, CommentType, TaskType } from '@/types/task.types';
+import { USER_TYPE } from '@/types/user.types';
+import USERS from '@/dummyData/users.json';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
@@ -18,6 +20,9 @@ import {
     Send,
     X,
     Check,
+    Smile,
+    AtSign,
+    AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,6 +30,7 @@ import { SelectMenu } from '@/components/SelectMenu';
 import Assignee from '@/components/Assignee';
 import DueDate from '@/components/DueDate';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import PRIORITY from '@/dummyData/priority.json';
 import TASK_TYPE from '@/dummyData/task_type.json';
 import {
@@ -47,6 +53,12 @@ interface Props {
 }
 
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const EMOJI_LIST = [
+    '👍', '👎', '❤️', '🔥', '🎉', '🚀', '💡', '👏', '🙏', '😊',
+    '😂', '😍', '😎', '🤔', '🙌', '✨', '💯', '✅', '❌', '🐛',
+    '📌', '⭐', '👀', '💪', '🎯', '⚡', '💬', '🥳', '🙈', '🍀'
+];
 
 const formatDisplayDate = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -134,11 +146,42 @@ const renderTaskTypeBadge = (type?: string) => {
     );
 };
 
+const renderCommentText = (text: string) => {
+    if (!text) return null;
+    // Regex to match user mentions (@Name or @UserName)
+    const mentionRegex = /(@[A-Za-z0-9_.\s]+?(?=\s|$|[^A-Za-z0-9_.]))/g;
+    const parts = text.split(mentionRegex);
+
+    return (
+        <span>
+            {parts.map((part, i) => {
+                if (part.startsWith('@')) {
+                    return (
+                        <span
+                            key={i}
+                            className="inline-flex items-center px-1.5 py-0.5 mx-0.5 rounded text-[11px] font-semibold bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80"
+                        >
+                            {part}
+                        </span>
+                    );
+                }
+                return part;
+            })}
+        </span>
+    );
+};
+
 export default function TaskCard({ task, column, isOverlay, onUpdateTask, onDeleteTask, activeEditId, setActiveEditId }: Props) {
     const ctx = useAppState();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
     const [formData, setFormData] = useState<TaskType>(task);
     const [newCommentText, setNewCommentText] = useState('');
+    const [isMentionOpen, setIsMentionOpen] = useState(false);
+    const [isEmojiOpen, setIsEmojiOpen] = useState(false);
+
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const inlineCardRef = useRef<HTMLDivElement | null>(null);
     const formDataRef = useRef<TaskType>(formData);
@@ -206,12 +249,10 @@ export default function TaskCard({ task, column, isOverlay, onUpdateTask, onDele
             const target = event.target as Node | null;
             if (!target) return;
 
-            // Inside inline edit card -> do nothing
             if (inlineCardRef.current && inlineCardRef.current.contains(target)) {
                 return;
             }
 
-            // Inside dropdown, popover, or dialog portal -> do nothing
             const isInsidePortal = (target as HTMLElement)?.closest?.(
                 '[data-slot="dropdown-content"], [data-slot="popover-content"], [data-slot="dialog"], [role="menu"], [role="dialog"]'
             );
@@ -219,7 +260,6 @@ export default function TaskCard({ task, column, isOverlay, onUpdateTask, onDele
                 return;
             }
 
-            // Outside click: save if title is filled, otherwise cancel/revert!
             const currentTitle = formDataRef.current?.taskTitle?.trim();
             if (currentTitle) {
                 const updated = {
@@ -252,16 +292,17 @@ export default function TaskCard({ task, column, isOverlay, onUpdateTask, onDele
             updatedAt: new Date().toDateString(),
         };
         onUpdateTask?.(updated);
-        setIsDialogOpen(false);
+        setIsEditMode(false);
     };
 
     const handleCancelDialog = () => {
         setFormData(task);
-        setIsDialogOpen(false);
+        setIsEditMode(false);
     };
 
-    const handleDelete = () => {
+    const handleConfirmDelete = () => {
         onDeleteTask?.(task.taskId);
+        setIsDeleteDialogOpen(false);
         setIsDialogOpen(false);
     };
 
@@ -350,6 +391,19 @@ export default function TaskCard({ task, column, isOverlay, onUpdateTask, onDele
 
         setFormData(updatedTask);
         onUpdateTask?.(updatedTask);
+    };
+
+    const handleInsertMention = (user: USER_TYPE) => {
+        setNewCommentText((prev) => {
+            if (prev.endsWith('@')) {
+                return prev.slice(0, -1) + `@${user.fullName} `;
+            }
+            return prev + `@${user.fullName} `;
+        });
+    };
+
+    const handleInsertEmoji = (emoji: string) => {
+        setNewCommentText((prev) => prev + emoji);
     };
 
     // Overlay state during drag
@@ -479,10 +533,13 @@ export default function TaskCard({ task, column, isOverlay, onUpdateTask, onDele
             <div
                 ref={setNodeRef}
                 style={style}
-                onClick={() => setIsDialogOpen(true)}
+                onClick={() => {
+                    setIsEditMode(false);
+                    setIsDialogOpen(true);
+                }}
                 className="group relative bg-white dark:bg-zinc-950 p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800/80 shadow-xs hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700 transition-all flex flex-col gap-2.5 cursor-pointer"
             >
-                {/* Header: Grip, Badges & Edit Button */}
+                {/* Header: Grip, Badges & Action Buttons (Delete & Edit) */}
                 <div className="flex items-center justify-between gap-1.5">
                     <div className="flex items-center gap-1.5">
                         <button
@@ -498,17 +555,32 @@ export default function TaskCard({ task, column, isOverlay, onUpdateTask, onDele
                         {renderTaskTypeBadge(task?.taskType)}
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setActiveEditId?.(myEditId);
-                        }}
-                        className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
-                        title="Edit task inline"
-                    >
-                        <Pencil size={13} />
-                    </button>
+                    <div className="flex items-center gap-1">
+                        {onDeleteTask && (
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsDeleteDialogOpen(true);
+                                }}
+                                className="p-1 rounded-md text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+                                title="Delete task"
+                            >
+                                <Trash2 size={13} />
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveEditId?.(myEditId);
+                            }}
+                            className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
+                            title="Edit task inline"
+                        >
+                            <Pencil size={13} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Task Title & Description Preview */}
@@ -551,77 +623,193 @@ export default function TaskCard({ task, column, isOverlay, onUpdateTask, onDele
                 </div>
             </div>
 
-            {/* Modal Dialog (Editable Mode on Card Click) */}
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogContent className="sm:max-w-[420px] p-6 space-y-4">
+                    <DialogHeader className="space-y-2">
+                        <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
+                            <AlertTriangle size={20} />
+                            <DialogTitle className="text-base font-semibold">Delete Task</DialogTitle>
+                        </div>
+                        <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                            Are you sure you want to delete <strong className="text-zinc-800 dark:text-zinc-200">&quot;{task?.taskTitle}&quot;</strong>? This action cannot be undone.
+                        </p>
+                    </DialogHeader>
+                    <DialogFooter className="flex items-center justify-end gap-2 pt-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsDeleteDialogOpen(false)}
+                            className="text-xs font-medium cursor-pointer"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleConfirmDelete}
+                            className="text-xs font-medium bg-rose-600 hover:bg-rose-700 text-white cursor-pointer"
+                        >
+                            Delete Task
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal Dialog (View Mode & Edit Mode) */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-[640px] max-h-[85vh] p-0 flex flex-col overflow-hidden">
                     {/* Dialog Header */}
-                    <DialogHeader className="p-5 pb-3 border-b border-zinc-100 dark:border-zinc-800 shrink-0">
-                        <div className="flex items-center gap-2 mb-1">
-                            {column && (
-                                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
-                                    {column.title}
-                                </span>
-                            )}
-                            <span className="text-xs text-zinc-400">Task #{task.taskId}</span>
+                    <DialogHeader className="p-5 pb-3 border-b border-zinc-100 dark:border-zinc-800 shrink-0 flex flex-row items-center justify-between">
+                        <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                                {column && (
+                                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+                                        {column.title}
+                                    </span>
+                                )}
+                                <span className="text-xs text-zinc-400">Task #{task.taskId}</span>
+                            </div>
+                            <DialogTitle className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                                {isEditMode ? 'Edit Task Details' : 'Task Details'}
+                            </DialogTitle>
                         </div>
-                        <DialogTitle className="sr-only">Edit Task Details</DialogTitle>
+
+                        {/* Edit Mode Pencil Toggle Button */}
+                        <div className="flex items-center gap-2 mr-6">
+                            {!isEditMode ? (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setIsEditMode(true)}
+                                    className="h-8 text-xs font-medium gap-1.5 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                                >
+                                    <Pencil size={13} className="text-primary" /> Edit Task
+                                </Button>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                        setFormData(task);
+                                        setIsEditMode(false);
+                                    }}
+                                    className="h-8 text-xs font-medium gap-1 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer"
+                                >
+                                    <X size={14} /> Cancel Edit
+                                </Button>
+                            )}
+                        </div>
                     </DialogHeader>
 
                     {/* Scrollable Body Content */}
                     <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
-                        {/* Title */}
-                        <div className="space-y-1">
-                            <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                                Task Title
-                            </label>
-                            <Textarea
-                                placeholder="Task title..."
-                                value={formData.taskTitle}
-                                onChange={(e) => handleOnChange('taskTitle', e.target.value)}
-                                className="bg-white dark:bg-zinc-900 text-sm font-semibold min-h-[42px] resize-none"
-                            />
-                        </div>
+                        {isEditMode ? (
+                            /* EDIT MODE FORM */
+                            <>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                                        Task Title
+                                    </label>
+                                    <Textarea
+                                        placeholder="Task title..."
+                                        value={formData.taskTitle}
+                                        onChange={(e) => handleOnChange('taskTitle', e.target.value)}
+                                        className="bg-white dark:bg-zinc-900 text-sm font-semibold min-h-[42px] resize-none"
+                                    />
+                                </div>
 
-                        {/* Meta Selector Controls */}
-                        <div className="grid grid-cols-2 gap-3 bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-lg border border-zinc-200/80 dark:border-zinc-800">
-                            <div className="space-y-1">
-                                <label className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Priority</label>
-                                <div>
-                                    <SelectMenu name="priorityType" onChange={handleOnChange} creatable value={formData.priorityType || ''} label="Priority" items={PRIORITY} />
+                                <div className="grid grid-cols-2 gap-3 bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-lg border border-zinc-200/80 dark:border-zinc-800">
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Priority</label>
+                                        <div>
+                                            <SelectMenu name="priorityType" onChange={handleOnChange} creatable value={formData.priorityType || ''} label="Priority" items={PRIORITY} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Task Type</label>
+                                        <div>
+                                            <SelectMenu name="taskType" onChange={handleOnChange} creatable value={formData.taskType || ''} label="Task Type" items={TASK_TYPE} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Assignees</label>
+                                        <div>
+                                            <Assignee name="assignee" values={formData.assignee || []} creatable onChange={handleOnChange} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Due Date</label>
+                                        <div>
+                                            <DueDate name="dueDate" value={formData.dueDate || ''} onChange={handleOnChange} />
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Task Type</label>
-                                <div>
-                                    <SelectMenu name="taskType" onChange={handleOnChange} creatable value={formData.taskType || ''} label="Task Type" items={TASK_TYPE} />
-                                </div>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Assignees</label>
-                                <div>
-                                    <Assignee name="assignee" values={formData.assignee || []} creatable onChange={handleOnChange} />
-                                </div>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Due Date</label>
-                                <div>
-                                    <DueDate name="dueDate" value={formData.dueDate || ''} onChange={handleOnChange} />
-                                </div>
-                            </div>
-                        </div>
 
-                        {/* Task Description */}
-                        <div className="space-y-1">
-                            <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                                Description
-                            </label>
-                            <Textarea
-                                placeholder="Add a detailed task description..."
-                                value={formData.taskDescription || ''}
-                                onChange={(e) => handleOnChange('taskDescription', e.target.value)}
-                                className="bg-white dark:bg-zinc-900 text-xs min-h-[80px]"
-                            />
-                        </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                                        Description
+                                    </label>
+                                    <Textarea
+                                        placeholder="Add a detailed task description..."
+                                        value={formData.taskDescription || ''}
+                                        onChange={(e) => handleOnChange('taskDescription', e.target.value)}
+                                        className="bg-white dark:bg-zinc-900 text-xs min-h-[80px]"
+                                    />
+                                </div>
+                            </>
+                        ) : (
+                            /* VIEW MODE DISPLAY */
+                            <>
+                                {/* Task Title */}
+                                <div>
+                                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 leading-snug">
+                                        {formData.taskTitle}
+                                    </h2>
+                                </div>
+
+                                {/* Meta Info Summary Grid */}
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-zinc-50/80 dark:bg-zinc-900/60 p-3.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800">
+                                    <div className="space-y-1">
+                                        <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider block">Priority</span>
+                                        <div>{renderPriorityBadge(formData.priorityType) || <span className="text-xs text-zinc-400">None</span>}</div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider block">Task Type</span>
+                                        <div>{renderTaskTypeBadge(formData.taskType) || <span className="text-xs text-zinc-400">None</span>}</div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider block">Due Date</span>
+                                        <div className="flex items-center gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                                            <CalendarDays size={13} className="text-zinc-400" />
+                                            <span>{formatDisplayDate(formData.dueDate) || 'No due date'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider block">Assignees</span>
+                                        <div>
+                                            {formData.assignee && formData.assignee.length > 0 ? (
+                                                <MyAvatarGroup users={formData.assignee} maxItem={4} />
+                                            ) : (
+                                                <span className="text-xs text-zinc-400">Unassigned</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Description View */}
+                                <div className="space-y-1.5">
+                                    <h4 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">Description</h4>
+                                    <div className="bg-zinc-50/50 dark:bg-zinc-900/40 p-3 rounded-lg border border-zinc-200/60 dark:border-zinc-800/80 min-h-[60px] text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">
+                                        {formData.taskDescription ? formData.taskDescription : <span className="text-zinc-400 italic">No description provided.</span>}
+                                    </div>
+                                </div>
+                            </>
+                        )}
 
                         {/* Attachments Section */}
                         <div className="space-y-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
@@ -713,13 +901,15 @@ export default function TaskCard({ task, column, isOverlay, onUpdateTask, onDele
                             )}
                         </div>
 
-                        {/* Comments Section */}
+                        {/* Comments Section with Mention & Emoji */}
                         <div className="space-y-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                            <div className="flex items-center gap-1.5">
-                                <MessageSquare size={15} className="text-zinc-500" />
-                                <h5 className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                                    Comments ({(formData.comments || []).length})
-                                </h5>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5">
+                                    <MessageSquare size={15} className="text-zinc-500" />
+                                    <h5 className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                                        Comments ({(formData.comments || []).length})
+                                    </h5>
+                                </div>
                             </div>
 
                             {/* Existing Comments List */}
@@ -755,7 +945,7 @@ export default function TaskCard({ task, column, isOverlay, onUpdateTask, onDele
                                                     </button>
                                                 </div>
                                                 <div className="text-xs text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-900/80 p-2.5 rounded-lg border border-zinc-100 dark:border-zinc-800 leading-relaxed font-normal break-words">
-                                                    {comm.text}
+                                                    {renderCommentText(comm.text)}
                                                 </div>
                                             </div>
                                         </div>
@@ -763,7 +953,7 @@ export default function TaskCard({ task, column, isOverlay, onUpdateTask, onDele
                                 )}
                             </div>
 
-                            {/* New Comment Input Box */}
+                            {/* New Comment Input Box with Mention & Emoji Controls */}
                             <div className="flex gap-2.5 pt-2 items-start">
                                 <Avatar size="sm" className="mt-1 shrink-0">
                                     <AvatarImage src={ctx?.state?.user?.photoUrl || 'https://github.com/shadcn.png'} />
@@ -771,18 +961,108 @@ export default function TaskCard({ task, column, isOverlay, onUpdateTask, onDele
                                 </Avatar>
                                 <div className="flex-1 space-y-2">
                                     <Textarea
-                                        placeholder="Write a comment..."
+                                        placeholder="Write a comment... (Type @ to mention someone)"
                                         value={newCommentText}
-                                        onChange={(e) => setNewCommentText(e.target.value)}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setNewCommentText(val);
+                                            if (val.endsWith('@')) {
+                                                setIsMentionOpen(true);
+                                            }
+                                        }}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' && !e.shiftKey) {
                                                 e.preventDefault();
                                                 handleAddComment();
                                             }
                                         }}
-                                        className="bg-white dark:bg-zinc-900 text-xs min-h-[50px] resize-none"
+                                        className="bg-white dark:bg-zinc-900 text-xs min-h-[56px] resize-none"
                                     />
-                                    <div className="flex justify-end">
+
+                                    {/* Action Bar for Comment (Mention Popover, Emoji Popover & Send) */}
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-1.5">
+                                            {/* Mention Popover */}
+                                            <Popover open={isMentionOpen} onOpenChange={setIsMentionOpen}>
+                                                <PopoverTrigger
+                                                    render={
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="h-7 px-2 text-[11px] text-zinc-500 hover:text-primary gap-1 border-zinc-200 dark:border-zinc-800 cursor-pointer"
+                                                            title="Mention team member"
+                                                        >
+                                                            <AtSign size={13} /> Mention
+                                                        </Button>
+                                                    }
+                                                />
+                                                <PopoverContent className="w-56 p-1.5 shadow-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 rounded-xl">
+                                                    <div className="px-2 py-1 text-[11px] font-semibold text-zinc-400 border-b border-zinc-100 dark:border-zinc-800 mb-1">
+                                                        Mention Team Member
+                                                    </div>
+                                                    <div className="max-h-48 overflow-y-auto space-y-0.5 custom-scrollbar">
+                                                        {USERS.map((user) => (
+                                                            <button
+                                                                key={user.userId}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    handleInsertMention(user);
+                                                                    setIsMentionOpen(false);
+                                                                }}
+                                                                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 text-left transition-colors cursor-pointer"
+                                                            >
+                                                                <Avatar size="sm" className="w-5 h-5">
+                                                                    <AvatarImage src={user.photoUrl} alt={user.fullName} />
+                                                                    <AvatarFallback className="text-[10px]">{user.fullName[0]}</AvatarFallback>
+                                                                </Avatar>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate">{user.fullName}</p>
+                                                                </div>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </PopoverContent>
+                                            </Popover>
+
+                                            {/* Emoji Popover */}
+                                            <Popover open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
+                                                <PopoverTrigger
+                                                    render={
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="h-7 px-2 text-[11px] text-zinc-500 hover:text-amber-500 gap-1 border-zinc-200 dark:border-zinc-800 cursor-pointer"
+                                                            title="Add emoji"
+                                                        >
+                                                            <Smile size={13} /> Emoji
+                                                        </Button>
+                                                    }
+                                                />
+                                                <PopoverContent className="w-64 p-2 shadow-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 rounded-xl">
+                                                    <div className="px-1 py-0.5 text-[11px] font-semibold text-zinc-400 border-b border-zinc-100 dark:border-zinc-800 mb-2">
+                                                        Pick an Emoji
+                                                    </div>
+                                                    <div className="grid grid-cols-6 gap-1 max-h-44 overflow-y-auto custom-scrollbar">
+                                                        {EMOJI_LIST.map((emoji, idx) => (
+                                                            <button
+                                                                key={idx}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    handleInsertEmoji(emoji);
+                                                                    setIsEmojiOpen(false);
+                                                                }}
+                                                                className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded text-base flex items-center justify-center transition-transform hover:scale-125 cursor-pointer"
+                                                            >
+                                                                {emoji}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+
                                         <Button
                                             type="button"
                                             size="sm"
@@ -815,30 +1095,44 @@ export default function TaskCard({ task, column, isOverlay, onUpdateTask, onDele
                                 type="button"
                                 variant="ghost"
                                 size="sm"
-                                onClick={handleDelete}
+                                onClick={() => setIsDeleteDialogOpen(true)}
                                 className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-medium cursor-pointer"
                             >
                                 <Trash2 size={14} className="mr-1" /> Delete
                             </Button>
                         ) : <div />}
                         <div className="flex items-center gap-2">
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                size="sm"
-                                onClick={handleCancelDialog}
-                                className="text-xs font-medium cursor-pointer"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="button"
-                                size="sm"
-                                onClick={handleSaveDialog}
-                                className="text-xs font-medium cursor-pointer"
-                            >
-                                Save Changes
-                            </Button>
+                            {isEditMode ? (
+                                <>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={handleCancelDialog}
+                                        className="text-xs font-medium cursor-pointer"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        onClick={handleSaveDialog}
+                                        className="text-xs font-medium cursor-pointer"
+                                    >
+                                        Save Changes
+                                    </Button>
+                                </>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => setIsDialogOpen(false)}
+                                    className="text-xs font-medium cursor-pointer"
+                                >
+                                    Close
+                                </Button>
+                            )}
                         </div>
                     </DialogFooter>
                 </DialogContent>

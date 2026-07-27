@@ -96,10 +96,19 @@ export default function KanbanBoard() {
         [activeColumn]
     )
 
-    // Handlers to Create Column / Tasks / Update Tasks
+    // Handlers to Create Column / Tasks / Update Tasks / Update Column / Delete Column
     const createNewSection = (newSection: string): void => {
         const id = `col-${Date.now()}`
         setColumns([...columns, { id, title: newSection }])
+    }
+
+    const handleUpdateColumn = (columnId: string | number, newTitle: string) => {
+        setColumns((prev) => prev.map((col) => (col.id === columnId ? { ...col, title: newTitle } : col)))
+    }
+
+    const handleDeleteColumn = (columnId: string | number) => {
+        setColumns((prev) => prev.filter((col) => col.id !== columnId))
+        setTasks((prev) => prev.filter((t) => t.columnId?.toString() !== columnId?.toString()))
     }
 
     const handleCreateTask = (newTask: TaskType) => {
@@ -288,6 +297,8 @@ export default function KanbanBoard() {
                                 onCreateTask={handleCreateTask}
                                 onUpdateTask={handleUpdateTask}
                                 onDeleteTask={handleDeleteTask}
+                                onUpdateColumn={handleUpdateColumn}
+                                onDeleteColumn={handleDeleteColumn}
                                 activeEditId={activeEditId}
                                 setActiveEditId={setActiveEditId}
                             />
@@ -306,6 +317,8 @@ export default function KanbanBoard() {
                                         onCreateTask={handleCreateTask}
                                         onUpdateTask={handleUpdateTask}
                                         onDeleteTask={handleDeleteTask}
+                                        onUpdateColumn={handleUpdateColumn}
+                                        onDeleteColumn={handleDeleteColumn}
                                         isOverlay
                                     />
                                 )}

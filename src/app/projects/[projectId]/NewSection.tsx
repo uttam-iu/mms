@@ -24,7 +24,7 @@ const NewSection: FC<NewSectionProps> = ({ createNewSection }) => {
                 <Plus size={15} className="mr-1" /> New Section
             </Button> :
                 <Input
-                    placeholder="New Column Title"
+                    placeholder="New Section Name"
                     value={newBoardTitle}
                     onChange={(e) => setNewBoardTitle(e.target.value)}
                     className="w-full sm:w-64 h-9 text-sm border-zinc-200 shadow-none bg-zinc-50/50"
