@@ -173,12 +173,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <>
             <Sidebar collapsible="icon" className="border-r border-zinc-200 dark:border-zinc-800" {...props}>
                 {/* Header: ZenFlow App Brand */}
-                <SidebarHeader>
+                <SidebarHeader className="bg-white">
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton size="lg" render={<Link href="/projects" />}>
                                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-white">
-                                    <Image alt='Z' height={40} width={40} src={logoIcon} className="object-contain" />
+                                    <Image alt='Z' height={40} width={40} src={logoIcon} className="object-none" />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <div className='px-1 text-[24px] cursor-pointer text-teal-800 dark:text-teal-400 font-extrabold'>ZenFlow</div>
@@ -416,9 +416,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                         <div
                                             key={user.userId}
                                             onClick={() => toggleMemberSelection(user.userId)}
-                                            className={`flex items-center justify-between p-1.5 rounded-md cursor-pointer transition-colors ${
-                                                isSelected ? 'bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                                            }`}
+                                            className={`flex items-center justify-between p-1.5 rounded-md cursor-pointer transition-colors ${isSelected ? 'bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                                }`}
                                         >
                                             <div className="flex items-center gap-2">
                                                 <Avatar className="h-6 w-6">

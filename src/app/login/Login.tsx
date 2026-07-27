@@ -6,9 +6,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Dummy_Uers from "@/dummyData/users.json";
-// import Image from "next/image"
-
-// import logoIcon from '../../../public/logo-white.png';
+import Image from "next/image"
+import logoIcon from '../../../public/logo-white.png';
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = React.useState<boolean>(false)
@@ -42,7 +41,9 @@ export function LoginForm() {
     <div className="flex min-h-screen items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-2xl font-bold tracking-tight text-teal-500">ZenFlow</CardTitle>
+          <CardTitle className="font-bold tracking-tight text-teal-500 flex justify-center">
+            <Image src={logoIcon} alt="ZenFlow" width={184} height={132} style={{ height: '132px', objectFit: 'none' }} />
+          </CardTitle>
           {/* <CardDescription>Login</CardDescription> */}
         </CardHeader>
         <form onSubmit={onLogin}>
