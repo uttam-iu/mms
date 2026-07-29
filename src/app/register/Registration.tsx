@@ -33,7 +33,7 @@ export function RegisterForm() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="font-bold tracking-tight text-teal-500 flex justify-center">
-            <Image src={logoIcon} alt="ZenFlow" width={184} height={132} style={{ height: '132px', objectFit: 'none' }} />
+            <Image src={logoIcon} alt="MMS" width={184} height={132} style={{ height: '132px', objectFit: 'none' }} />
           </CardTitle>
           {/* <CardDescription>শুরু করতে নিচের ফর্মটি পূরণ করুন</CardDescription> */}
         </CardHeader>

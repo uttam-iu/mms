@@ -3,12 +3,9 @@
 import * as React from "react"
 import { useState } from "react"
 import {
-    LayoutGrid,
-    CheckCircle2,
     FolderKanban,
     ChevronDown,
     ChevronRight,
-    MessageSquare,
     Users,
     Plus,
     UserCheck,
@@ -18,7 +15,6 @@ import {
     SidebarContent,
     SidebarFooter,
     SidebarGroup,
-    SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
@@ -40,18 +36,19 @@ import { usePathname } from "next/navigation"
 
 import logoIcon from '../../../public/logo.png';
 import { useAppState } from "@/context/AppContext"
-import { getProjects } from "@/dummyData/projects"
-import { PROJECT_TYPE } from "@/types/project.types"
 import USERS from "@/dummyData/users.json"
 import { ChatTarget, GroupType } from "@/types/chat.types"
-import { USER_TYPE } from "@/types/user.types"
+
+interface MONTH_TYPE {
+    monthId: string | number;
+    monthName: string;
+}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const ctx = useAppState();
     const pathname = usePathname();
-    const projects: PROJECT_TYPE[] = getProjects();
+    const months: MONTH_TYPE[] = [{ monthId: 123242424, monthName: "January" }, { monthId: 2345, monthName: "February" }];
 
-    const [isProjectsCollapsed, setIsProjectsCollapsed] = useState(false);
     const [isUsersCollapsed, setIsUsersCollapsed] = useState(false);
     const [isGroupsCollapsed, setIsGroupsCollapsed] = useState(false);
 
@@ -172,16 +169,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
         <>
             <Sidebar collapsible="icon" className="border-r border-zinc-200 dark:border-zinc-800" {...props}>
-                {/* Header: ZenFlow App Brand */}
+                {/* Header: MMS App Brand */}
                 <SidebarHeader className="bg-white">
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <SidebarMenuButton size="lg" render={<Link href="/projects" />}>
+                            <SidebarMenuButton size="lg" render={<Link href="/months" />}>
                                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-white">
                                     <Image alt='Z' height={40} width={40} src={logoIcon} className="object-none" />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
-                                    <div className='px-1 text-[24px] cursor-pointer text-teal-800 dark:text-teal-400 font-extrabold'>ZenFlow</div>
+                                    <div className='px-1 text-[24px] cursor-pointer text-teal-800 dark:text-teal-400 font-extrabold'>MMS</div>
                                 </div>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -191,7 +188,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 {/* Content Body */}
                 <SidebarContent className="custom-scrollbar space-y-1">
                     {/* Navigation Group */}
-                    <SidebarGroup>
+                    {/* <SidebarGroup>
                         <SidebarGroupLabel className="px-3 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                             Navigation
                         </SidebarGroupLabel>
@@ -207,48 +204,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>
-                    </SidebarGroup>
+                    </SidebarGroup> */}
 
                     {/* Collapsible Projects List Group */}
                     <SidebarGroup>
-                        <div
-                            onClick={() => setIsProjectsCollapsed((prev) => !prev)}
-                            className="px-3 py-1 flex items-center justify-between cursor-pointer group hover:text-zinc-800 dark:hover:text-zinc-200 select-none"
-                        >
-                            <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                                {isProjectsCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
-                                <span>Projects</span>
-                            </div>
-                            <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-500 px-1.5 py-0.5 rounded-full font-semibold">
-                                {projects.length}
-                            </span>
-                        </div>
 
-                        {!isProjectsCollapsed && (
-                            <SidebarMenu className="mt-1">
-                                {projects.map((proj) => {
-                                    const href = `/projects/${proj.projectId}`;
-                                    const isActive = pathname === href;
 
-                                    return (
-                                        <SidebarMenuItem key={proj.projectId}>
-                                            <SidebarMenuButton
-                                                tooltip={proj.projectName}
-                                                isActive={isActive}
-                                                render={<Link href={href} />}
-                                            >
-                                                {proj.isClosed ? (
-                                                    <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                                ) : (
-                                                    <FolderKanban className="size-4 text-teal-600 dark:text-teal-400 shrink-0" />
-                                                )}
-                                                <span className="truncate text-xs font-medium">{proj.projectName}</span>
-                                            </SidebarMenuButton>
-                                        </SidebarMenuItem>
-                                    );
-                                })}
-                            </SidebarMenu>
-                        )}
+                        <SidebarMenu className="mt-1">
+                            {months?.map((month) => {
+                                const href = `/months/${month.monthId}`;
+                                const isActive = pathname === href;
+
+                                return (
+                                    <SidebarMenuItem key={month.monthId}>
+                                        <SidebarMenuButton
+                                            tooltip={month.monthName}
+                                            isActive={isActive}
+                                            render={<Link href={href} />}
+                                        >
+
+                                            <FolderKanban className="size-4 text-teal-600 dark:text-teal-400 shrink-0" />
+
+                                            <span className="truncate text-xs font-medium">{month.monthName}</span>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                );
+                            })}
+                        </SidebarMenu>
                     </SidebarGroup>
 
                     {/* Direct Messages (Users) Section */}
@@ -374,7 +356,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-semibold text-xs">{ctx?.state?.user?.fullName || 'User'}</span>
-                                    <span className="truncate text-[11px] text-zinc-500">{ctx?.state?.user?.userName || 'user@zenflow.com'}</span>
+                                    <span className="truncate text-[11px] text-zinc-500">{ctx?.state?.user?.userName || 'user@MMS.com'}</span>
                                 </div>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

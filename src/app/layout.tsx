@@ -21,8 +21,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ZenFlow",
-  description: "Manage Your Task...",
+  title: "MMS",
+  description: "Manage Your Meal...",
 };
 
 export default async function RootLayout({
