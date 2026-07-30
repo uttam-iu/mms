@@ -24,7 +24,7 @@ export function LoginForm() {
     const userName = target?.userName?.value;
     const password = target?.password?.value;
 
-    const userIndb = Dummy_Uers?.find(ec => ec?.userName?.trim() === userName?.trim()) || null
+    const userIndb = Dummy_Uers?.find(ec => ec?.phone?.trim() === userName?.trim()) || null
 
     if (userIndb && password === '12345') {
       setLoginError(false)
@@ -49,10 +49,10 @@ export function LoginForm() {
         <form onSubmit={onLogin}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="userName">Username</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input id="userName" type="email" placeholder="name@example.com" className="pl-10" required />
+                <Input id="userName" type="text" className="pl-10" required />
               </div>
             </div>
             <div className="space-y-2">
@@ -79,7 +79,7 @@ export function LoginForm() {
                 </button>
               </div>
             </div>
-            {loginError && <div className="text-red-500">**Email or password mismatch.</div>}
+            {loginError && <div className="text-red-500">**Username or password mismatch.</div>}
             <div className="flex justify-center"><Button className="text-teal-500 font-bold cursor-pointer" variant={'outline'}
               type="submit"
             >Login</Button></div>
