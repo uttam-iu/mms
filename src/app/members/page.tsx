@@ -253,7 +253,7 @@ export default function MembersPage() {
               size="sm"
               className="h-9 text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white px-4 shadow-xs cursor-pointer flex items-center gap-1.5 rounded-lg w-full md:w-auto justify-center"
             >
-              <Filter size={14} /> Perform Filter
+              <Filter size={14} /> Filter
             </Button>
           </div>
         </div>
