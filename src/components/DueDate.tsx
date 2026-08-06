@@ -4,6 +4,7 @@ import React, { FC } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { CalendarDays, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { DAY_NAMES, MONTH_NAMES } from '@/lib/utils';
 
 interface DueDateProps {
     name: string;
@@ -11,11 +12,7 @@ interface DueDateProps {
     onChange: (name: string, value: string) => void;
 }
 
-const MONTH_NAMES = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-];
-const DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
 
 export const DueDate: FC<DueDateProps> = ({ name, value = '', onChange }) => {
     const [open, setOpen] = React.useState(false);
@@ -193,13 +190,12 @@ export const DueDate: FC<DueDateProps> = ({ name, value = '', onChange }) => {
                                     key={day}
                                     type="button"
                                     onClick={() => handleSelectDate(year, month, day)}
-                                    className={`h-7 w-7 rounded-md text-xs font-medium flex items-center justify-center transition-colors cursor-pointer ${
-                                        selected
+                                    className={`h-7 w-7 rounded-md text-xs font-medium flex items-center justify-center transition-colors cursor-pointer ${selected
                                             ? 'bg-zinc-900 text-white font-bold dark:bg-zinc-100 dark:text-zinc-900 shadow-sm'
                                             : current
-                                            ? 'border border-zinc-400 text-zinc-900 dark:text-zinc-100 font-semibold'
-                                            : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                                    }`}
+                                                ? 'border border-zinc-400 text-zinc-900 dark:text-zinc-100 font-semibold'
+                                                : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                        }`}
                                 >
                                     {day}
                                 </button>

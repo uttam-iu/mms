@@ -65,6 +65,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const ctx = useAppState();
   const pathname = usePathname();
 
+  const currentMonthIndex = new Date().getMonth();
   // Reorder months list dynamically so that the current RUNNING month is the FIRST item
   const orderedMonths = React.useMemo(() => {
     const currentMonthIndex = new Date().getMonth(); // 0 to 11
@@ -73,7 +74,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return [runningMonth, ...otherMonths];
   }, []);
 
-  const currentMonthIndex = new Date().getMonth();
+
 
   return (
     <Sidebar collapsible="icon" className="border-r border-zinc-200 dark:border-zinc-800" {...props}>

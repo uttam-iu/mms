@@ -1,22 +1,8 @@
 import { MonthlyMealData, MemberMealSummary, DailyMealEntry, BazarExpense, ExtraExpense, MemberDeposit } from "@/types/meal.types";
 import USERS from "./users.json";
+import { MONTH_LIST } from "@/lib/utils";
 
-export const MONTH_LIST = [
-  { value: "january", label: "January", monthNumber: 1 },
-  { value: "february", label: "February", monthNumber: 2 },
-  { value: "march", label: "March", monthNumber: 3 },
-  { value: "april", label: "April", monthNumber: 4 },
-  { value: "may", label: "May", monthNumber: 5 },
-  { value: "june", label: "June", monthNumber: 6 },
-  { value: "july", label: "July", monthNumber: 7 },
-  { value: "august", label: "August", monthNumber: 8 },
-  { value: "september", label: "September", monthNumber: 9 },
-  { value: "october", label: "October", monthNumber: 10 },
-  { value: "november", label: "November", monthNumber: 11 },
-  { value: "december", label: "December", monthNumber: 12 },
-];
 
-export const AVAILABLE_YEARS = [2026, 2025, 2024, 2023, 2022, 2021, 2020];
 
 export function getDaysInMonth(year: number, monthNumber: number): number {
   return new Date(year, monthNumber, 0).getDate();
