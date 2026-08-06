@@ -8,23 +8,21 @@ import { MONTH_LIST } from '@/lib/utils';
 
 export default function MonthsRootPage() {
   const router = useRouter();
-  const searchParams = useSearchParams()
-
+  const searchParams = useSearchParams();
 
   React.useEffect(() => {
-    if (!searchParams?.get('month') || !searchParams?.get('year')) {
-      const query = new URLSearchParams({
-        year: new Date().getFullYear().toString(),
-        month: MONTH_LIST[new Date().getMonth()].value,
-      });
+    const currentMonth = searchParams?.get('month');
+    const currentYear = searchParams?.get('year');
+
+    if (!currentMonth || !currentYear) {
+      const prms = {
+        month: currentMonth || MONTH_LIST[new Date().getMonth()].value,
+        year: currentYear || new Date().getFullYear().toString(),
+      };
+      const query = new URLSearchParams(prms);
       router.replace(`/months?${query.toString()}`);
     }
-  }, []);
+  }, [searchParams, router]);
 
-  return (
-    <MonthDetails />
-    // <div className="flex h-full w-full items-center justify-center min-h-[400px]">
-    //   <Loader />
-    // </div>
-  );
+  return <MonthDetails />;
 }

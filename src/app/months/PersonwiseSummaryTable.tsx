@@ -24,6 +24,7 @@ export const PersonwiseSummaryTable = ({ mealData }: { mealData: MonthlyMealData
                         <th className="p-1 text-center whitespace-nowrap">Meals Consumed</th>
                         <th className="p-1 text-right whitespace-nowrap">Meal Cost (৳)</th>
                         <th className="p-1 text-right whitespace-nowrap">Fixed Extra Share (৳)</th>
+                        <th className="p-1 text-right whitespace-nowrap text-indigo-600 dark:text-indigo-400">Ind. Fixed Costs (৳)</th>
                         <th className="p-1 text-right font-bold whitespace-nowrap">Gross Total Cost (৳)</th>
                         <th className="p-1 text-right text-emerald-600 dark:text-emerald-400 whitespace-nowrap">Total Deposit (৳)</th>
                         <th className="p-1 text-right font-bold whitespace-nowrap">Net Balance (৳)</th>
@@ -51,6 +52,16 @@ export const PersonwiseSummaryTable = ({ mealData }: { mealData: MonthlyMealData
                             </td>
                             <td className="p-1 text-right">৳{member.mealCost.toLocaleString()}</td>
                             <td className="p-1 text-right">৳{member.extraShare.toLocaleString()}</td>
+                            <td className="p-1 text-right">
+                                <div className="font-semibold text-indigo-600 dark:text-indigo-400">
+                                    ৳{(member.individualCostTotal || 0).toLocaleString()}
+                                </div>
+                                {member.individualCosts && member.individualCosts.length > 0 && (
+                                    <div className="text-[9px] text-zinc-400 font-normal truncate max-w-[140px] ml-auto">
+                                        {member.individualCosts.map((c) => `${c.costType}: ৳${c.amount}`).join(', ')}
+                                    </div>
+                                )}
+                            </td>
                             <td className="p-1 text-right font-bold text-zinc-900 dark:text-zinc-100">
                                 ৳{member.grossTotalCost.toLocaleString()}
                             </td>
@@ -95,6 +106,9 @@ export const PersonwiseSummaryTable = ({ mealData }: { mealData: MonthlyMealData
                         <td className="p-1 text-center text-amber-700 dark:text-amber-400">{mealData.totalMeals} meals</td>
                         <td className="p-1 text-right">৳{mealData.totalBazarCost.toLocaleString()}</td>
                         <td className="p-1 text-right">৳{mealData.totalExtraCost.toLocaleString()}</td>
+                        <td className="p-1 text-right text-indigo-600 dark:text-indigo-400">
+                            ৳{mealData.activeMembers.reduce((sum, m) => sum + (m.individualCostTotal || 0), 0).toLocaleString()}
+                        </td>
                         <td className="p-1 text-right text-teal-700 dark:text-teal-400">
                             ৳{mealData.totalGrossCost.toLocaleString()}
                         </td>

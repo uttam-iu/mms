@@ -18,6 +18,10 @@ import {
   Lock,
   Unlock,
   ShieldAlert,
+  Coins,
+  Trash2,
+  Plus,
+  Building,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -31,7 +35,15 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import USERS_SEED from '@/dummyData/users.json';
-import { USER_TYPE } from '@/types/user.types';
+import { USER_TYPE, IndividualCostItem } from '@/types/user.types';
+
+const DEFAULT_INDIVIDUAL_COSTS: { [key: number]: IndividualCostItem[] } = {
+  1: [{ id: 'ic-1-1', costType: 'House Rent', amount: 3500 }, { id: 'ic-1-2', costType: 'Room Gas Addon', amount: 300 }],
+  2: [{ id: 'ic-2-1', costType: 'House Rent', amount: 4000 }],
+  3: [{ id: 'ic-3-1', costType: 'House Rent', amount: 3800 }, { id: 'ic-3-2', costType: 'Parking Fee', amount: 500 }],
+  4: [{ id: 'ic-4-1', costType: 'House Rent', amount: 3500 }],
+  5: [{ id: 'ic-5-1', costType: 'House Rent', amount: 3500 }],
+};
 
 // Extended initial members list
 const INITIAL_MEMBERS: USER_TYPE[] = USERS_SEED.map((u, idx) => ({
@@ -39,6 +51,7 @@ const INITIAL_MEMBERS: USER_TYPE[] = USERS_SEED.map((u, idx) => ({
   role: idx === 0 ? 'admin' : 'member',
   status: idx === 4 ? 'inactive' : 'active',
   joinedDate: `2024-0${(idx % 6) + 1}-15`,
+  individualCosts: DEFAULT_INDIVIDUAL_COSTS[u.userId] || [{ id: `ic-${u.userId}-1`, costType: 'House Rent', amount: 3500 }],
 }));
 
 export default function MembersPage() {
@@ -110,6 +123,55 @@ export default function MembersPage() {
   // Edit Member Modal State
   const [editingMember, setEditingMember] = useState<USER_TYPE | null>(null);
 
+  // Manage Individual Fixed Costs Modal State
+  const [managingCostMember, setManagingCostMember] = useState<USER_TYPE | null>(null);
+  const [memberCosts, setMemberCosts] = useState<IndividualCostItem[]>([]);
+
+  const handleOpenCostModal = (member: USER_TYPE) => {
+    setManagingCostMember(member);
+    setMemberCosts(
+      member.individualCosts && member.individualCosts.length > 0
+        ? [...member.individualCosts]
+        : [{ id: `ic-${member.userId}-1`, costType: 'House Rent', amount: 3500 }]
+    );
+  };
+
+  const handleAddCostRow = () => {
+    setMemberCosts((prev) => [
+      ...prev,
+      { id: `ic-${Date.now()}-${prev.length}`, costType: '', amount: 0 },
+    ]);
+  };
+
+  const handleUpdateCostRow = (index: number, field: 'costType' | 'amount', value: any) => {
+    setMemberCosts((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+    );
+  };
+
+  const handleRemoveCostRow = (index: number) => {
+    setMemberCosts((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSaveCostsSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!managingCostMember) return;
+
+    const validCosts = memberCosts.filter(
+      (c) => c.costType.trim() !== '' && !isNaN(Number(c.amount))
+    );
+
+    setMembers((prev) =>
+      prev.map((m) =>
+        m.userId === managingCostMember.userId
+          ? { ...m, individualCosts: validCosts }
+          : m
+      )
+    );
+
+    setManagingCostMember(null);
+  };
+
   // Handlers for Admin Actions
   const handleToggleUserStatus = (userId: number) => {
     setMembers((prev) =>
@@ -136,6 +198,7 @@ export default function MembersPage() {
       role: newMemberData.role,
       status: newMemberData.status,
       joinedDate: new Date().toISOString().split('T')[0],
+      individualCosts: [{ id: `ic-${Date.now()}-1`, costType: 'House Rent', amount: 3500 }],
     };
 
     setMembers((prev) => [newMember, ...prev]);
@@ -161,9 +224,9 @@ export default function MembersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50/60 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans pb-12">
+    <div className="min-h-screen bg-zinc-50/60 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans pb-4">
       {/* Sticky Header with Title and Admin Mode Switch */}
-      <div className="sticky top-0 z-20 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-4 py-3 shadow-xs">
+      <div className="sticky top-0 z-20 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 p-2 shadow-xs">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 rounded-xl bg-teal-600/10 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400 flex items-center justify-center font-bold">
@@ -215,8 +278,8 @@ export default function MembersPage() {
       </div>
 
       {/* FILTER CONTROLS SECTION WITH FILTER PERFORM BUTTON */}
-      <div className="max-w-7xl mx-auto px-4 pt-6 space-y-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-xl p-3.5 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+      <div className="max-w-7xl mx-auto px-2 pt-2 space-y-6">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl p-2 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
           <div className="flex flex-col md:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-wrap w-full md:w-auto">
               {/* Search Input */}
@@ -260,7 +323,7 @@ export default function MembersPage() {
 
         {/* MEMBER LIST TABLE */}
         <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs overflow-hidden">
-          <div className="p-4 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
+          <div className="p-2 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
             <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               House Members Table
             </h3>
@@ -277,41 +340,48 @@ export default function MembersPage() {
               <table className="w-full text-left text-xs">
                 <thead className="bg-zinc-50 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 font-semibold border-b border-zinc-200 dark:border-zinc-800">
                   <tr>
-                    <th className="py-3.5 px-4">Member Name</th>
-                    <th className="py-3.5 px-4">Email / Username</th>
-                    <th className="py-3.5 px-4">Phone Number</th>
-                    <th className="py-3.5 px-4 text-center">Role</th>
-                    <th className="py-3.5 px-4 text-center">Status</th>
-                    <th className="py-3.5 px-4">Joined Date</th>
-                    <th className="py-3.5 px-4 text-right">
+                    <th className="p-1">SL</th>
+                    <th className="p-1">Member Name</th>
+                    <th className="p-1">Email / Username</th>
+                    <th className="p-1">Phone Number</th>
+                    <th className="p-1 text-center">Role</th>
+                    <th className="p-1 text-center">Status</th>
+                    <th className="p-1">Fixed Individual Costs</th>
+                    <th className="p-1">Joined Date</th>
+                    <th className="p-1 text-right">
                       {isAdminMode ? 'Admin Actions' : 'Permissions'}
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/60 text-zinc-800 dark:text-zinc-200">
-                  {filteredMembers.map((member) => {
+                  {filteredMembers.map((member, index) => {
                     const isActive = (member.status || 'active') === 'active';
                     const isAdmin = member.role === 'admin';
+                    const indCosts = member.individualCosts || [];
+                    const indTotal = indCosts.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
                     return (
                       <tr key={member.userId} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors">
-                        {/* Avatar & Name */}
-                        <td className="py-3 px-4 font-medium flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={member.photoUrl || ''} alt={member.fullName} />
-                            <AvatarFallback>{member.fullName[0]}</AvatarFallback>
-                          </Avatar>
-                          <span className="font-semibold text-zinc-900 dark:text-zinc-100">{member.fullName}</span>
+                        <td className="p-1 font-semibold text-zinc-700 dark:text-zinc-300">{index + 1}</td>
+
+                        <td className="p-1 ">
+                          <div className='flex items-center'>
+                            <div className='font-medium flex  gap-2'>
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={member.photoUrl || ''} alt={member.fullName} />
+                                <AvatarFallback>{member.fullName[0]}</AvatarFallback>
+                              </Avatar>
+                              <div className='flex items-center'>
+                                <span className="font-semibold text-zinc-900 dark:text-zinc-100">{member.fullName}</span>
+                              </div>
+                            </div>
+                          </div>
                         </td>
+                        <td className="p-1 text-zinc-600 dark:text-zinc-400">{member.userName}</td>
 
-                        {/* Email */}
-                        <td className="py-3 px-4 text-zinc-600 dark:text-zinc-400">{member.userName}</td>
+                        <td className="p-1 font-mono text-zinc-700 dark:text-zinc-300">{member.phone}</td>
 
-                        {/* Phone */}
-                        <td className="py-3 px-4 font-mono text-zinc-700 dark:text-zinc-300">{member.phone}</td>
-
-                        {/* Role */}
-                        <td className="py-3 px-4 text-center">
+                        <td className="p-1 text-center">
                           <span
                             className={`px-2 py-0.5 text-[10px] font-bold rounded ${isAdmin
                               ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
@@ -322,8 +392,7 @@ export default function MembersPage() {
                           </span>
                         </td>
 
-                        {/* Status */}
-                        <td className="py-3 px-4 text-center">
+                        <td className="p-1 text-center">
                           <span
                             className={`px-2.5 py-0.5 text-[10px] font-semibold rounded-full inline-flex items-center gap-1 ${isActive
                               ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
@@ -335,14 +404,38 @@ export default function MembersPage() {
                           </span>
                         </td>
 
+                        <td className="p-1">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1 flex-wrap max-w-[220px]">
+                              {indCosts.length > 0 ? (
+                                indCosts.map((c) => (
+                                  <span
+                                    key={c.id}
+                                    className="whitespace-nowrap px-2 py-0.5 text-[10px] font-semibold rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
+                                  >
+                                    {c.costType}: ৳{c.amount.toLocaleString()}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-[10px] text-zinc-400 italic">None</span>
+                              )}
+                            </div>
+                            {indCosts.length > 0 && (
+                              <div className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
+                                Total: ৳{indTotal.toLocaleString()}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
                         {/* Joined Date */}
-                        <td className="py-3 px-4 text-zinc-500 font-mono text-[11px]">{member.joinedDate || '2024-01-15'}</td>
+                        <td className="whitespace-nowrap p-1 text-zinc-500 font-mono text-[11px]">{member.joinedDate || '2024-01-15'}</td>
 
                         {/* Actions */}
-                        <td className="py-3 px-4 text-right">
+                        <td className="p-1 text-right">
                           {isAdminMode ? (
-                            <div className="flex items-center justify-end gap-2">
-                              {/* Status Toggle Button */}
+                            <div className="flex items-center justify-end gap-1.5 flex-wrap">
+
                               <button
                                 type="button"
                                 onClick={() => handleToggleUserStatus(member.userId)}
@@ -355,15 +448,27 @@ export default function MembersPage() {
                               </button>
 
                               {/* Edit Button */}
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setEditingMember(member)}
-                                className="h-6 text-[11px] font-medium px-2 cursor-pointer border-zinc-300 dark:border-zinc-700"
-                              >
-                                <Pencil size={11} className="mr-1" /> Edit
-                              </Button>
+                              <div className='flex gap-2'>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleOpenCostModal(member)}
+                                  className="h-6 text-[11px] font-semibold px-2 cursor-pointer border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950"
+                                >
+                                  <Coins size={11} className="mr-1" /> Fixed Costs
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setEditingMember(member)}
+                                  className="h-6 text-[11px] font-medium px-2 cursor-pointer border-zinc-300 dark:border-zinc-700"
+                                >
+                                  <Pencil size={11} className="mr-1" /> Edit
+                                </Button>
+                              </div>
+
                             </div>
                           ) : (
                             <span className="text-[10px] text-zinc-400 italic">Read-Only</span>
@@ -541,6 +646,92 @@ export default function MembersPage() {
                 </Button>
                 <Button type="submit" size="sm" className="bg-teal-700 hover:bg-teal-800 text-white">
                   Update Member
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* MANAGE INDIVIDUAL FIXED COSTS MODAL */}
+      <Dialog open={!!managingCostMember} onOpenChange={() => setManagingCostMember(null)}>
+        <DialogContent className="sm:max-w-[500px]">
+          {managingCostMember && (
+            <form onSubmit={handleSaveCostsSubmit}>
+              <DialogHeader>
+                <DialogTitle className="text-sm font-bold flex items-center gap-2">
+                  <Coins size={16} className="text-indigo-600" /> Individual Fixed Costs ({managingCostMember.fullName})
+                </DialogTitle>
+                <DialogDescription className="text-xs">
+                  Set fixed individual costs (e.g. house rent, seat rent, private utilities) assigned to {managingCostMember.fullName}.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-3 py-4 text-xs max-h-[350px] overflow-y-auto custom-scrollbar">
+                {memberCosts.length === 0 ? (
+                  <div className="text-center py-4 text-zinc-400">No fixed cost items added yet.</div>
+                ) : (
+                  memberCosts.map((cost, idx) => (
+                    <div key={cost.id || idx} className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-900 p-2 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                      <div className="flex-1">
+                        <label className="block text-[10px] font-semibold text-zinc-500 mb-0.5">Cost Type</label>
+                        <Input
+                          placeholder="e.g. House Rent, Seat Rent"
+                          value={cost.costType}
+                          onChange={(e) => handleUpdateCostRow(idx, 'costType', e.target.value)}
+                          className="h-8 text-xs bg-white dark:bg-zinc-950"
+                          required
+                        />
+                      </div>
+                      <div className="w-32">
+                        <label className="block text-[10px] font-semibold text-zinc-500 mb-0.5">Value (৳)</label>
+                        <Input
+                          type="number"
+                          placeholder="e.g. 3500"
+                          value={cost.amount}
+                          onChange={(e) => handleUpdateCostRow(idx, 'amount', Number(e.target.value))}
+                          className="h-8 text-xs bg-white dark:bg-zinc-950"
+                          required
+                        />
+                      </div>
+                      <div className="pt-3">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCostRow(idx)}
+                          className="p-1.5 rounded text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors cursor-pointer"
+                          title="Remove cost entry"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddCostRow}
+                  className="w-full h-8 text-xs border-dashed border-indigo-300 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950 cursor-pointer"
+                >
+                  <Plus size={13} className="mr-1" /> Add Fixed Cost Entry
+                </Button>
+
+                <div className="mt-4 p-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 flex items-center justify-between">
+                  <span className="font-semibold text-indigo-900 dark:text-indigo-200">Total Fixed Individual Cost:</span>
+                  <span className="text-sm font-black text-indigo-700 dark:text-indigo-300">
+                    ৳{memberCosts.reduce((sum, item) => sum + (Number(item.amount) || 0), 0).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button type="button" variant="outline" size="sm" onClick={() => setManagingCostMember(null)}>
+                  Cancel
+                </Button>
+                <Button type="submit" size="sm" className="bg-indigo-700 hover:bg-indigo-800 text-white">
+                  Save Fixed Costs
                 </Button>
               </DialogFooter>
             </form>

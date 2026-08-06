@@ -1,3 +1,5 @@
+import { IndividualCostItem } from "./user.types";
+
 export interface MemberMealSummary {
   userId: number;
   userName: string;
@@ -10,6 +12,8 @@ export interface MemberMealSummary {
   dinnerCount: number;
   mealCost: number;
   extraShare: number;
+  individualCosts?: IndividualCostItem[];
+  individualCostTotal: number;
   grossTotalCost: number;
   totalDeposit: number;
   netBalance: number; // positive = refund/cashback, negative = due

@@ -31,7 +31,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 import logoIcon from '../../../public/logo.png';
 import { useAppState } from '@/context/AppContext';
@@ -64,6 +64,10 @@ const ALL_MONTHS: MONTH_META[] = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const ctx = useAppState();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const currentYear = searchParams?.get('year') || new Date().getFullYear().toString();
+  const currentMonthParam = searchParams?.get('month');
 
   const currentMonthIndex = new Date().getMonth();
   // Reorder months list dynamically so that the current RUNNING month is the FIRST item
@@ -73,8 +77,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const otherMonths = ALL_MONTHS.filter((m) => m.monthIndex !== currentMonthIndex);
     return [runningMonth, ...otherMonths];
   }, []);
-
-
 
   return (
     <Sidebar collapsible="icon" className="border-r border-zinc-200 dark:border-zinc-800" {...props}>
@@ -129,8 +131,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarMenu className="mt-1 space-y-0.5">
             {orderedMonths.map((month) => {
-              const href = `/months/${month.monthId}`;
-              const isActive = pathname === href || pathname?.startsWith(`${href}?`);
+              const href = `/months?month=${month.monthId}&year=${currentYear}`;
+              const isActive =
+                pathname === '/months' &&
+                (currentMonthParam
+                  ? currentMonthParam.toLowerCase() === month.monthId.toLowerCase()
+                  : month.monthIndex === currentMonthIndex);
               const isRunningMonth = month.monthIndex === currentMonthIndex;
               const IconComp = month.icon;
 

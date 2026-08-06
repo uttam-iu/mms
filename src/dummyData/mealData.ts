@@ -169,16 +169,27 @@ export function generateMonthlyMealData(year: number, monthId: string): MonthlyM
     totalDeposits += dep1Amount + dep2Amount;
   });
 
-  const totalGrossCost = totalBazarCost + totalExtraCost;
-  const netBalance = totalDeposits - totalGrossCost;
-
-  // 5. Build Active Members Summaries
+  // 5. Build Active Members Summaries & Individual Fixed Costs
   const extraSharePerMember = Number((totalExtraCost / USERS.length).toFixed(2));
+
+  const defaultIndividualCosts: { [userId: number]: { id: string; costType: string; amount: number }[] } = {
+    1: [{ id: 'ic-1-1', costType: 'House Rent', amount: 3500 }, { id: 'ic-1-2', costType: 'Room Gas Addon', amount: 300 }],
+    2: [{ id: 'ic-2-1', costType: 'House Rent', amount: 4000 }],
+    3: [{ id: 'ic-3-1', costType: 'House Rent', amount: 3800 }, { id: 'ic-3-2', costType: 'Parking Fee', amount: 500 }],
+    4: [{ id: 'ic-4-1', costType: 'House Rent', amount: 3500 }],
+    5: [{ id: 'ic-5-1', costType: 'House Rent', amount: 3500 }],
+  };
+
+  let totalIndividualFixedCosts = 0;
 
   const activeMembers: MemberMealSummary[] = USERS.map((u) => {
     const mTotal = memberTotalMeals[u.userId];
     const mealCost = Number((mTotal.total * mealRate).toFixed(2));
-    const grossCost = Number((mealCost + extraSharePerMember).toFixed(2));
+    const indCosts = defaultIndividualCosts[u.userId] || [];
+    const indCostTotal = indCosts.reduce((sum, item) => sum + item.amount, 0);
+    totalIndividualFixedCosts += indCostTotal;
+
+    const grossCost = Number((mealCost + extraSharePerMember + indCostTotal).toFixed(2));
 
     const userDeposits = deposits
       .filter((d) => d.userId === u.userId)
@@ -201,12 +212,17 @@ export function generateMonthlyMealData(year: number, monthId: string): MonthlyM
       dinnerCount: mTotal.d,
       mealCost,
       extraShare: extraSharePerMember,
+      individualCosts: indCosts,
+      individualCostTotal: indCostTotal,
       grossTotalCost: grossCost,
       totalDeposit: userDeposits,
       netBalance: userNet,
       status,
     };
   });
+
+  const totalGrossCost = totalBazarCost + totalExtraCost + totalIndividualFixedCosts;
+  const netBalance = totalDeposits - totalGrossCost;
 
   return {
     year,

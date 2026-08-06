@@ -1,3 +1,9 @@
+export interface IndividualCostItem {
+  id: string;
+  costType: string;
+  amount: number;
+}
+
 export interface USER_TYPE {
   userId: number;
   phone: string;
@@ -7,4 +13,5 @@ export interface USER_TYPE {
   role?: 'admin' | 'member';
   status?: 'active' | 'inactive';
   joinedDate?: string;
+  individualCosts?: IndividualCostItem[];
 }
