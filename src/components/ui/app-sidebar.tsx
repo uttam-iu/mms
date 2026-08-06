@@ -16,7 +16,6 @@ import {
   Wind,
   Coffee,
   Gift,
-  Sparkles,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -32,7 +31,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-
 import logoIcon from '../../../public/logo.png';
 import { useAppState } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
