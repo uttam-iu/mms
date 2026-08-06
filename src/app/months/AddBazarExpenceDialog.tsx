@@ -9,7 +9,7 @@ export const AddBazarExpenceDialog = ({ isAddBazarOpen, setIsAddBazarOpen, mealD
     isAddBazarOpen: boolean;
     setIsAddBazarOpen: (open: boolean) => void;
     mealData: any;
-    handleAddBazarSubmit: (e: React.FormEvent) => void;
+    handleAddBazarSubmit: (e: React.FormEvent, newBazar: any) => void;
 }) => {
 
     const [newBazar, setNewBazar] = React.useState({

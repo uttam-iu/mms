@@ -45,9 +45,9 @@ export default async function RootLayout({
           {isLoggedIn ?
             <SidebarProvider>
               <AppSidebar />
-              <main className="w-full">
+              <main className="flex-1 min-w-0 w-full overflow-x-hidden">
                 <SidebarTrigger />
-                <div id='main-content' className="overflow-auto p-1" style={{ height: `calc(100vh - 48px)` }}>
+                <div id='main-content' className="overflow-auto p-1 min-w-0" style={{ height: `calc(100vh - 48px)` }}>
                   {children}
                 </div>
               </main>

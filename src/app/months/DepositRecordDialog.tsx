@@ -10,7 +10,7 @@ export const DepositRecordDialog = ({ isAddDepositOpen, setIsAddDepositOpen, mea
     isAddDepositOpen: boolean;
     setIsAddDepositOpen: (open: boolean) => void;
     mealData: any;
-    handleAddDepositSubmit: (e: React.FormEvent) => void;
+    handleAddDepositSubmit: (e: React.FormEvent, newDeposit: any) => void;
 }) => {
 
     const [newDeposit, setNewDeposit] = React.useState({
@@ -46,7 +46,7 @@ export const DepositRecordDialog = ({ isAddDepositOpen, setIsAddDepositOpen, mea
                             onChange={(e) => setNewDeposit({ ...newDeposit, userId: Number(e.target.value) })}
                             className="w-full h-8 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 text-xs"
                         >
-                            {mealData.activeMembers.map((m) => (
+                            {mealData.activeMembers.map((m: USER_TYPE) => (
                                 <option key={m.userId} value={m.userId}>
                                     {m.fullName}
                                 </option>
