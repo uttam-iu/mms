@@ -96,7 +96,7 @@ export function LoginForm() {
               <Label htmlFor="userName">Username or Phone</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input id="userName" type="text" className="pl-10" required placeholder="01617630101 or uttam@k.com" />
+                <Input id="userName" defaultValue={'01617630101'} type="text" className="pl-10" required placeholder="username" />
               </div>
             </div>
             <div className="space-y-2">
@@ -110,6 +110,7 @@ export function LoginForm() {
                   type={showPassword ? "text" : "password"}
                   className="pl-10 pr-10"
                   required
+                  defaultValue={'12345'}
                   placeholder="••••••••"
                 />
                 <button

@@ -14,6 +14,7 @@ import { Button } from './button';
 import { useAppState } from '@/context/AppContext';
 import Dummy_Users from "@/dummyData/users.json";
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
+import Link from 'next/link';
 
 export default function Toolbar({
 	children,
@@ -62,7 +63,7 @@ export default function Toolbar({
 								{ctx?.state?.user?.fullName || 'User Account'}
 							</DropdownMenuLabel>
 							<DropdownMenuItem className="cursor-pointer text-xs">
-								<User className="h-4 w-4 mr-2 text-zinc-500" /> Profile
+								<Link className='flex w-full' href={'/profile'}><User className="h-4 w-4 mr-2 text-zinc-500" /> Profile</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={onLogout} className="cursor-pointer text-xs text-rose-600 focus:text-rose-600 dark:text-rose-400">
 								<LogOutIcon className="h-4 w-4 mr-2 text-rose-500" /> Log Out
