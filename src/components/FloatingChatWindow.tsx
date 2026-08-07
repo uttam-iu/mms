@@ -15,7 +15,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Dialog,
   DialogContent,
@@ -23,28 +22,29 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   X,
   Minus,
   Maximize2,
   Send,
-  Smile,
   UserPlus,
   Users,
   Check,
-  Pencil,
   Reply,
   Forward,
   Paperclip,
   Mic,
   Play,
   Pause,
-  FileText,
-  ExternalLink,
   Plus,
   MessageSquare,
   Search,
   UserCheck,
+  Smile,
+  FileText,
+  ExternalLink,
 } from 'lucide-react';
 
 const EMOJI_LIST = [
@@ -66,25 +66,47 @@ const parseDurationToSeconds = (durationStr?: string): number => {
   return isNaN(parsed) ? 5 : parsed;
 };
 
-const renderMessageTextWithMentions = (text: string) => {
+const renderMessageTextWithLinksAndMentions = (text: string) => {
   if (!text) return null;
+  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
   const mentionRegex = /(@[A-Za-z0-9_.\s]+?(?=\s|$|[^A-Za-z0-9_.]))/g;
-  const parts = text.split(mentionRegex);
+
+  const urlParts = text.split(urlRegex);
 
   return (
     <span>
-      {parts.map((part, i) => {
-        if (part.startsWith('@')) {
+      {urlParts.map((urlPart, idx) => {
+        if (urlPart.match(urlRegex)) {
+          const href = urlPart.startsWith('http') ? urlPart : `https://${urlPart}`;
           return (
-            <span
-              key={i}
-              className="inline-flex items-center px-1.5 py-0.5 mx-0.5 rounded text-[11px] font-semibold bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80"
+            <a
+              key={`link-${idx}`}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-0.5 underline font-semibold text-teal-200 dark:text-teal-400 hover:text-white dark:hover:text-teal-200 break-all px-0.5"
+              onClick={(e) => e.stopPropagation()}
             >
-              {part}
-            </span>
+              {urlPart}
+              <ExternalLink size={10} className="inline shrink-0" />
+            </a>
           );
         }
-        return part;
+
+        const mentionParts = urlPart.split(mentionRegex);
+        return mentionParts.map((part, mIdx) => {
+          if (part.startsWith('@')) {
+            return (
+              <span
+                key={`mention-${idx}-${mIdx}`}
+                className="inline-flex items-center px-1.5 py-0.5 mx-0.5 rounded text-[11px] font-semibold bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/80"
+              >
+                {part}
+              </span>
+            );
+          }
+          return part;
+        });
       })}
     </span>
   );
@@ -238,14 +260,71 @@ function SingleChatBox({
     };
   };
 
+  const isMobile = useIsMobile();
+
+  // Mobile View Minimized Bubble State: Shows avatar only, opens on click, shows Close & Maximize on hover
+  if (isMinimized && isMobile) {
+    return (
+      <div
+        onClick={onToggleMinimize}
+        title={target.name}
+        className="relative group cursor-pointer flex items-center justify-center p-0.5 rounded-full bg-zinc-900 text-white border-2 border-teal-600 shadow-xl transition-all hover:scale-110 mb-1 shrink-0 select-none"
+      >
+        <div className="relative">
+          {target.type === 'user' ? (
+            <Avatar className="h-8 w-8 border border-zinc-700">
+              <AvatarImage src={target.avatar || ''} alt={target.name} />
+              <AvatarFallback className="text-[10px] bg-zinc-800 text-white font-bold">{target.name[0]}</AvatarFallback>
+            </Avatar>
+          ) : (
+            <div className="h-8 w-8 rounded-full bg-teal-600 flex items-center justify-center text-white font-bold">
+              <Users size={14} />
+            </div>
+          )}
+          {target.type === 'user' && target.online && (
+            <span className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-zinc-900" />
+          )}
+        </div>
+
+        {/* On Hover Action Overlay (Close & Maximize) */}
+        <div className="absolute inset-0 rounded-full bg-zinc-950/85 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-0.5 z-10">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleMinimize();
+            }}
+            className="p-0.5 text-teal-400 hover:text-teal-200 hover:bg-zinc-800 rounded-full transition-colors cursor-pointer"
+            title="Maximize Chat Window"
+          >
+            <Maximize2 size={11} />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className="p-0.5 text-zinc-400 hover:text-rose-400 hover:bg-zinc-800 rounded-full transition-colors cursor-pointer"
+            title="Close Chat"
+          >
+            <X size={11} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
-      className={`w-72 sm:w-80 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-t-xl shadow-2xl flex flex-col transition-all duration-200 shrink-0 ${
-        isMinimized ? 'h-11 overflow-hidden' : 'h-[440px]'
-      }`}
+      className={`w-72 sm:w-80 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-t-xl shadow-2xl flex flex-col transition-all duration-200 shrink-0 ${isMinimized ? 'h-11 overflow-hidden' : 'h-[440px]'
+        }`}
     >
-      {/* Header */}
-      <div className="h-11 px-3 bg-zinc-900 text-white rounded-t-xl flex items-center justify-between shrink-0 select-none">
+      {/* Header (Clicking anywhere on header bar toggles minimize/maximize) */}
+      <div
+        onClick={onToggleMinimize}
+        className="h-11 px-3 bg-zinc-900 text-white rounded-t-xl flex items-center justify-between shrink-0 select-none cursor-pointer hover:bg-zinc-850 transition-colors"
+      >
         <div className="flex items-center gap-2 min-w-0 flex-1 mr-1">
           <div className="relative shrink-0">
             {target.type === 'user' ? (
@@ -265,7 +344,7 @@ function SingleChatBox({
 
           <div className="min-w-0 flex-1">
             {isEditingGroupName && target.type === 'group' ? (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                 <Input
                   value={groupNameInput}
                   onChange={(e) => setGroupNameInput(e.target.value)}
@@ -281,7 +360,8 @@ function SingleChatBox({
                 />
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     if (groupNameInput.trim()) onUpdateGroupName(groupNameInput.trim());
                     setIsEditingGroupName(false);
                   }}
@@ -292,15 +372,15 @@ function SingleChatBox({
               </div>
             ) : (
               <h4
-                onClick={() => {
+                onClick={(e) => {
                   if (target.type === 'group') {
+                    e.stopPropagation();
                     setGroupNameInput(target.name);
                     setIsEditingGroupName(true);
                   }
                 }}
-                className={`text-xs font-semibold text-zinc-100 truncate ${
-                  target.type === 'group' ? 'cursor-pointer hover:text-teal-300' : ''
-                }`}
+                className={`text-xs font-semibold text-zinc-100 truncate ${target.type === 'group' ? 'cursor-pointer hover:text-teal-300' : ''
+                  }`}
               >
                 {target.name}
               </h4>
@@ -312,7 +392,10 @@ function SingleChatBox({
           {target.type === 'group' && !isMinimized && (
             <button
               type="button"
-              onClick={() => setIsAddMemberOpen(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsAddMemberOpen(true);
+              }}
               className="p-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer"
             >
               <UserPlus size={13} />
@@ -320,14 +403,20 @@ function SingleChatBox({
           )}
           <button
             type="button"
-            onClick={onToggleMinimize}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleMinimize();
+            }}
             className="p-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800 cursor-pointer"
           >
             {isMinimized ? <Maximize2 size={13} /> : <Minus size={13} />}
           </button>
           <button
             type="button"
-            onClick={onClose}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
             className="p-1 rounded text-zinc-400 hover:text-rose-400 hover:bg-zinc-800 cursor-pointer"
           >
             <X size={13} />
@@ -358,14 +447,36 @@ function SingleChatBox({
 
                   {/* Hover Action buttons */}
                   <div
-                    className={`absolute -top-4 opacity-0 group-hover/msg:opacity-100 transition-opacity bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full px-1 py-0.5 shadow-md flex items-center gap-0.5 z-20 ${
-                      isSelf ? 'right-2' : 'left-6'
-                    }`}
+                    className={`absolute -top-4 opacity-0 group-hover/msg:opacity-100 transition-opacity bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full px-1.5 py-0.5 shadow-md flex items-center gap-1 z-20 ${isSelf ? 'right-2' : 'left-6'
+                      }`}
                   >
+                    <Popover>
+                      <PopoverTrigger
+                        type="button"
+                        className="p-0.5 text-zinc-500 hover:text-amber-500 cursor-pointer rounded"
+                        title="Add Reaction"
+                      >
+                        <Smile size={11} />
+                      </PopoverTrigger>
+                      <PopoverContent className="p-1 flex items-center gap-0.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl rounded-full z-50">
+                        {REACTION_EMOJIS.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => onAddReaction(targetId, msg.id, emoji)}
+                            className="text-xs p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-transform hover:scale-125 cursor-pointer"
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </PopoverContent>
+                    </Popover>
+
                     <button
                       type="button"
                       onClick={() => setReplyingTo(msg)}
                       className="p-0.5 text-zinc-500 hover:text-teal-600 cursor-pointer"
+                      title="Reply"
                     >
                       <Reply size={11} />
                     </button>
@@ -373,6 +484,7 @@ function SingleChatBox({
                       type="button"
                       onClick={() => onForwardMessage(msg)}
                       className="p-0.5 text-zinc-500 hover:text-teal-600 cursor-pointer"
+                      title="Forward"
                     >
                       <Forward size={11} />
                     </button>
@@ -381,19 +493,67 @@ function SingleChatBox({
                   <div className={`max-w-[85%] space-y-0.5 ${isSelf ? 'items-end' : 'items-start'}`}>
                     <div
                       className={`p-2 rounded-xl text-xs leading-relaxed font-normal break-words shadow-2xs relative ${
-                        isSelf
-                          ? 'bg-teal-700 text-white rounded-br-none'
-                          : 'bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-700/80 rounded-bl-none'
-                      }`}
+                        msg.reactions && msg.reactions.length > 0 ? 'mb-2' : ''
+                      } ${isSelf
+                        ? 'bg-teal-700 text-white rounded-br-none'
+                        : 'bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-700/80 rounded-bl-none'
+                        }`}
                     >
                       {msg.replyTo && (
                         <div
-                          className={`mb-1 p-1 rounded border-l-2 text-[10px] ${
-                            isSelf ? 'bg-teal-800/80 border-white/60 text-teal-100' : 'bg-zinc-100 dark:bg-zinc-900 border-teal-600'
-                          }`}
+                          className={`mb-1 p-1 rounded border-l-2 text-[10px] ${isSelf ? 'bg-teal-800/80 border-white/60 text-teal-100' : 'bg-zinc-100 dark:bg-zinc-900 border-teal-600'
+                            }`}
                         >
                           <span className="font-semibold block">{msg.replyTo.senderName}</span>
                           <span className="truncate block opacity-90">{msg.replyTo.text}</span>
+                        </div>
+                      )}
+
+                      {msg.isForwarded && (
+                        <div className="text-[9px] italic opacity-80 mb-0.5 flex items-center gap-1">
+                          <Forward size={9} /> Forwarded
+                        </div>
+                      )}
+
+                      {/* Attachments rendering */}
+                      {msg.attachments && msg.attachments.length > 0 && (
+                        <div className="space-y-1.5 mb-1">
+                          {msg.attachments.map((att) => (
+                            <div key={att.id}>
+                              {att.type === 'image' || att.url.match(/\.(png|jpg|jpeg|gif|webp|svg)$/i) ? (
+                                <div className="relative group/att overflow-hidden rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 max-w-[200px]">
+                                  <img src={att.url} alt={att.name} className="w-full h-auto object-cover max-h-40 rounded-lg" />
+                                  <a
+                                    href={att.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="absolute bottom-1 right-1 p-1 rounded-full bg-zinc-900/80 text-white opacity-0 group-hover/att:opacity-100 transition-opacity hover:bg-zinc-900"
+                                    title="Open Image"
+                                  >
+                                    <ExternalLink size={12} />
+                                  </a>
+                                </div>
+                              ) : (
+                                <a
+                                  href={att.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={`flex items-center gap-2 p-1.5 rounded-lg border text-[11px] transition-colors ${
+                                    isSelf
+                                      ? 'bg-teal-800/60 border-teal-600/60 text-white hover:bg-teal-800'
+                                      : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800'
+                                  }`}
+                                >
+                                  <FileText size={14} className="shrink-0 text-teal-400" />
+                                  <div className="min-w-0 flex-1 truncate">
+                                    <span className="font-semibold block truncate">{att.name}</span>
+                                    {att.size && <span className="text-[9px] opacity-75">{att.size}</span>}
+                                  </div>
+                                  <ExternalLink size={12} className="shrink-0 opacity-75" />
+                                </a>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       )}
 
@@ -402,18 +562,45 @@ function SingleChatBox({
                           <button
                             type="button"
                             onClick={() => togglePlayVoiceMessage(msg)}
-                            className={`p-1.5 rounded-full cursor-pointer ${
-                              isSelf ? 'bg-white text-teal-700' : 'bg-teal-600 text-white'
-                            }`}
+                            className={`p-1.5 rounded-full cursor-pointer ${isSelf ? 'bg-white text-teal-700' : 'bg-teal-600 text-white'
+                              }`}
                           >
                             {isAudioPlaying ? <Pause size={12} /> : <Play size={12} />}
                           </button>
                           <span className="text-[10px] font-mono">0:0{currentPlayedSecs} / {msg.audio.duration}</span>
                         </div>
                       ) : (
-                        renderMessageTextWithMentions(msg.text)
+                        renderMessageTextWithLinksAndMentions(msg.text)
+                      )}
+
+                      {/* Reactions Overlay Pill: bottom-right for incoming, bottom-left for outgoing */}
+                      {msg.reactions && msg.reactions.length > 0 && (
+                        <div
+                          className={`absolute -bottom-2.5 ${
+                            isSelf ? 'left-2' : 'right-2'
+                          } flex items-center gap-0.5 z-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-full px-1.5 py-0.5 shadow-md`}
+                        >
+                          {msg.reactions.map((reaction, rIdx) => {
+                            const hasUserReacted = reaction.users.includes(currentUser.fullName);
+                            return (
+                              <button
+                                key={rIdx}
+                                type="button"
+                                onClick={() => onAddReaction(targetId, msg.id, reaction.emoji)}
+                                className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-0.5 transition-transform hover:scale-125 cursor-pointer ${
+                                  hasUserReacted ? 'text-amber-500 font-extrabold' : 'text-zinc-700 dark:text-zinc-300'
+                                }`}
+                                title={reaction.users.join(', ')}
+                              >
+                                <span>{reaction.emoji}</span>
+                                {reaction.count > 1 && <span className="text-[9px] font-semibold">{reaction.count}</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
+
                     <span className={`text-[8px] text-zinc-400 block px-1 ${isSelf ? 'text-right' : 'text-left'}`}>
                       {msg.timestamp}
                     </span>
@@ -446,6 +633,45 @@ function SingleChatBox({
             </div>
           ) : (
             <div className="p-2 bg-white dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 space-y-1.5">
+              {/* Pending Attachments Preview */}
+              {pendingAttachments.length > 0 && (
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+                  {pendingAttachments.map((att) => (
+                    <div
+                      key={att.id}
+                      className="relative group shrink-0 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900"
+                    >
+                      {att.type === 'image' || att.url.match(/\.(png|jpg|jpeg|gif|webp|svg)$/i) ? (
+                        <div className="relative w-12 h-12">
+                          <img src={att.url} alt={att.name} className="w-full h-full object-cover rounded-lg" />
+                          <button
+                            type="button"
+                            onClick={() => setPendingAttachments((prev) => prev.filter((a) => a.id !== att.id))}
+                            className="absolute -top-1 -right-1 p-0.5 bg-rose-500 text-white rounded-full shadow-md hover:bg-rose-600 cursor-pointer z-10"
+                            title="Remove attachment"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="p-1.5 text-[10px] flex items-center gap-1 max-w-[110px]">
+                          <FileText size={12} className="text-teal-600 shrink-0" />
+                          <span className="truncate text-zinc-800 dark:text-zinc-200 font-medium">{att.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => setPendingAttachments((prev) => prev.filter((a) => a.id !== att.id))}
+                            className="text-rose-500 hover:text-rose-700 ml-0.5 cursor-pointer"
+                            title="Remove attachment"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <Textarea
                 placeholder={`Message ${target.name}...`}
                 value={newMessageText}
@@ -462,10 +688,39 @@ function SingleChatBox({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-0.5">
                   <input type="file" ref={fileInputRef} onChange={handleFileUpload} multiple className="hidden" />
-                  <Button type="button" variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()} className="h-6 px-1.5 text-zinc-500 hover:text-teal-600 cursor-pointer">
+                  <Button type="button" variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()} className="h-6 px-1.5 text-zinc-500 hover:text-teal-600 cursor-pointer" title="Attach File or Image">
                     <Paperclip size={14} />
                   </Button>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setIsRecording(true)} className="h-6 px-1.5 text-zinc-500 hover:text-rose-500 cursor-pointer">
+
+                  {/* Emoji Picker Popover */}
+                  <Popover open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
+                    <PopoverTrigger
+                      type="button"
+                      className="h-6 px-1.5 text-zinc-500 hover:text-amber-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded flex items-center justify-center cursor-pointer transition-colors"
+                      title="Add Emoji"
+                    >
+                      <Smile size={14} />
+                    </PopoverTrigger>
+                    <PopoverContent className="p-2 w-56 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl rounded-xl z-50">
+                      <div className="grid grid-cols-5 gap-1">
+                        {EMOJI_LIST.map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => {
+                              setNewMessageText((prev) => prev + emoji);
+                              setIsEmojiOpen(false);
+                            }}
+                            className="text-base p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-transform hover:scale-125 cursor-pointer flex items-center justify-center"
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setIsRecording(true)} className="h-6 px-1.5 text-zinc-500 hover:text-rose-500 cursor-pointer" title="Voice Message">
                     <Mic size={14} />
                   </Button>
                 </div>
@@ -696,10 +951,10 @@ export default function FloatingChatWindow() {
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       replyTo: replyTo
         ? {
-            id: replyTo.id,
-            senderName: replyTo.sender.fullName,
-            text: replyTo.text || (replyTo.audio ? '🎤 Voice message' : 'File attachment'),
-          }
+          id: replyTo.id,
+          senderName: replyTo.sender.fullName,
+          text: replyTo.text || (replyTo.audio ? '🎤 Voice message' : 'File attachment'),
+        }
         : undefined,
       attachments: attachments && attachments.length > 0 ? attachments : undefined,
       audio: audio,
@@ -810,7 +1065,7 @@ export default function FloatingChatWindow() {
   return (
     <>
       {/* MULTI-WINDOW CONTAINER: Renders all opened chat windows side-by-side */}
-      <div className="fixed bottom-0 right-20 sm:right-24 z-40 flex items-end gap-3 max-w-[calc(100vw-120px)] overflow-x-auto p-1 custom-scrollbar pointer-events-auto">
+      <div className="fixed bottom-0 right-14 sm:right-24 z-40 flex items-end gap-1.5 sm:gap-3 max-w-[calc(100vw-65px)] sm:max-w-[calc(100vw-120px)] overflow-x-auto p-1 custom-scrollbar pointer-events-auto">
         {openChats.map((chatTarget) => {
           const isMin = minimizedChatIds.has(chatTarget.id.toString()) || minimizedChatIds.has(chatTarget.id);
           return (
@@ -845,10 +1100,10 @@ export default function FloatingChatWindow() {
       </div>
 
       {/* ALWAYS VISIBLE FLOATING CHAT ICON (Bottom Right Corner) */}
-      <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+      <div className="fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-50 flex flex-col items-end gap-3">
         {/* Floating Chat List Panel */}
         {isChatListPanelOpen && (
-          <div className="w-80 sm:w-96 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[480px] animate-in fade-in slide-in-from-bottom-4 duration-200">
+          <div className="w-[calc(100vw-24px)] sm:w-96 max-w-96 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[480px] animate-in fade-in slide-in-from-bottom-4 duration-200">
             {/* Panel Header */}
             <div className="p-3.5 bg-zinc-900 text-white flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
@@ -909,11 +1164,10 @@ export default function FloatingChatWindow() {
                     <div
                       key={item.id}
                       onClick={() => handleSelectChatTarget(item)}
-                      className={`p-2.5 rounded-xl flex items-center gap-3 cursor-pointer border transition-all group select-none ${
-                        isOpenInWindow
-                          ? 'bg-teal-50/90 dark:bg-teal-950/40 border-teal-300 dark:border-teal-800/80 shadow-2xs'
-                          : 'hover:bg-zinc-100/80 dark:hover:bg-zinc-900/80 border-transparent'
-                      }`}
+                      className={`p-2.5 rounded-xl flex items-center gap-3 cursor-pointer border transition-all group select-none ${isOpenInWindow
+                        ? 'bg-teal-50/90 dark:bg-teal-950/40 border-teal-300 dark:border-teal-800/80 shadow-2xs'
+                        : 'hover:bg-zinc-100/80 dark:hover:bg-zinc-900/80 border-transparent'
+                        }`}
                     >
                       <div className="relative shrink-0">
                         {item.type === 'user' ? (
@@ -945,11 +1199,10 @@ export default function FloatingChatWindow() {
                             {item.lastMessage}
                           </p>
                           <span
-                            className={`text-[9px] font-semibold px-1.5 py-0.2 rounded shrink-0 ${
-                              item.type === 'group'
-                                ? 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300'
-                                : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
-                            }`}
+                            className={`text-[9px] font-semibold px-1.5 py-0.2 rounded shrink-0 ${item.type === 'group'
+                              ? 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300'
+                              : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
+                              }`}
                           >
                             {item.type === 'group' ? 'Group' : 'Direct'}
                           </span>
@@ -967,11 +1220,12 @@ export default function FloatingChatWindow() {
         <button
           type="button"
           onClick={() => setIsChatListPanelOpen((prev) => !prev)}
-          className="h-13 w-13 rounded-full bg-teal-700 hover:bg-teal-800 text-white shadow-xl flex items-center justify-center relative cursor-pointer transition-transform hover:scale-105 active:scale-95 group"
+          className="h-10 w-10 sm:h-13 sm:w-13 rounded-full bg-teal-700 hover:bg-teal-800 text-white shadow-xl flex items-center justify-center relative cursor-pointer transition-transform hover:scale-105 active:scale-95 group"
           title="Open Chat List"
         >
-          <MessageSquare size={22} className="group-hover:rotate-12 transition-transform" />
-          <span className="absolute -top-1 -right-1 h-5 w-5 bg-rose-500 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center border-2 border-white dark:border-zinc-950 shadow-xs">
+          <MessageSquare size={18} className="sm:hidden group-hover:rotate-12 transition-transform" />
+          <MessageSquare size={22} className="hidden sm:block group-hover:rotate-12 transition-transform" />
+          <span className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 bg-rose-500 text-white text-[9px] sm:text-[10px] font-extrabold rounded-full flex items-center justify-center border-2 border-white dark:border-zinc-950 shadow-xs">
             {chatTargetsList.length}
           </span>
         </button>
@@ -1011,11 +1265,10 @@ export default function FloatingChatWindow() {
                           prev.includes(user.userId) ? prev.filter((id) => id !== user.userId) : [...prev, user.userId]
                         )
                       }
-                      className={`flex items-center justify-between p-1.5 rounded-md cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60'
-                          : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                      }`}
+                      className={`flex items-center justify-between p-1.5 rounded-md cursor-pointer transition-colors ${isSelected
+                        ? 'bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60'
+                        : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                        }`}
                     >
                       <div className="flex items-center gap-2">
                         <Avatar className="h-6 w-6">
