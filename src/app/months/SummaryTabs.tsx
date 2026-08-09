@@ -30,7 +30,7 @@ export const SummaryTabs = ({ setActiveTab, mealData, activeTab }: { setActiveTa
         },
     ]
 
-    console.log('mealData', mealData)
+    // console.log('mealData', mealData)
 
     return (
         <div className="border-b border-zinc-200 dark:border-zinc-800 pb-2 w-full min-w-0 overflow-hidden">

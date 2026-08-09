@@ -1,21 +1,11 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import * as React from 'react';
 import {
   Users,
   User,
-  Snowflake,
-  Heart,
-  Sprout,
-  CloudRain,
-  Sun,
-  Flame,
-  SunMedium,
-  TreePalm,
-  Leaf,
-  Wind,
-  Coffee,
-  Gift,
+  icons,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -34,6 +24,8 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import logoIcon from '../../../public/logo.png';
 import { useAppState } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
+import axios from 'axios';
+import Loader from '../Loader';
 
 interface MONTH_META {
   monthId: string;
@@ -42,43 +34,34 @@ interface MONTH_META {
   icon: React.ComponentType<{ className?: string }>;
   colorClass: string;
   bgClass: string;
+  isCurrentMonth: boolean;
 }
-
-const ALL_MONTHS: MONTH_META[] = [
-  { monthId: 'january', monthName: 'January', monthIndex: 0, icon: Snowflake, colorClass: 'text-cyan-500', bgClass: 'bg-cyan-500/10' },
-  { monthId: 'february', monthName: 'February', monthIndex: 1, icon: Heart, colorClass: 'text-rose-500', bgClass: 'bg-rose-500/10' },
-  { monthId: 'march', monthName: 'March', monthIndex: 2, icon: Sprout, colorClass: 'text-emerald-500', bgClass: 'bg-emerald-500/10' },
-  { monthId: 'april', monthName: 'April', monthIndex: 3, icon: CloudRain, colorClass: 'text-sky-500', bgClass: 'bg-sky-500/10' },
-  { monthId: 'may', monthName: 'May', monthIndex: 4, icon: Sun, colorClass: 'text-amber-500', bgClass: 'bg-amber-500/10' },
-  { monthId: 'june', monthName: 'June', monthIndex: 5, icon: Flame, colorClass: 'text-orange-500', bgClass: 'bg-orange-500/10' },
-  { monthId: 'july', monthName: 'July', monthIndex: 6, icon: SunMedium, colorClass: 'text-teal-500', bgClass: 'bg-teal-500/10' },
-  { monthId: 'august', monthName: 'August', monthIndex: 7, icon: TreePalm, colorClass: 'text-lime-500', bgClass: 'bg-lime-500/10' },
-  { monthId: 'september', monthName: 'September', monthIndex: 8, icon: Leaf, colorClass: 'text-amber-600', bgClass: 'bg-amber-600/10' },
-  { monthId: 'october', monthName: 'October', monthIndex: 9, icon: Wind, colorClass: 'text-purple-500', bgClass: 'bg-purple-500/10' },
-  { monthId: 'november', monthName: 'November', monthIndex: 10, icon: Coffee, colorClass: 'text-indigo-500', bgClass: 'bg-indigo-500/10' },
-  { monthId: 'december', monthName: 'December', monthIndex: 11, icon: Gift, colorClass: 'text-red-500', bgClass: 'bg-red-500/10' },
-];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const ctx = useAppState();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const currentYear = searchParams?.get('year') || new Date().getFullYear().toString();
-  const currentMonthParam = searchParams?.get('month');
 
-  const currentMonthIndex = new Date().getMonth();
-  // Reorder months list dynamically so that the current RUNNING month is the FIRST item
-  const orderedMonths = React.useMemo(() => {
-    const currentMonthIndex = new Date().getMonth(); // 0 to 11
-    const runningMonth = ALL_MONTHS.find((m) => m.monthIndex === currentMonthIndex) || ALL_MONTHS[0];
-    const otherMonths = ALL_MONTHS.filter((m) => m.monthIndex !== currentMonthIndex);
-    return [runningMonth, ...otherMonths];
-  }, []);
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [data, setData] = React.useState<MONTH_META[]>([]);
+
+  React.useEffect(() => {
+    setLoading(true);
+    axios.get(process.env.NEXT_PUBLIC_API_URL + 'menus')
+      .then(response => {
+        setLoading(false);
+        setData(response?.data?.data || []);
+      })
+      .catch(() => {
+        setLoading(false);
+        setData([]);
+      });
+  }, [])
 
   return (
     <Sidebar collapsible="icon" className="border-r border-zinc-200 dark:border-zinc-800" {...props}>
-      {/* Header: MMS App Brand */}
+
       <SidebarHeader className="bg-white">
         <SidebarMenu>
           <SidebarMenuItem>
@@ -96,9 +79,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
 
-      {/* Content Body: Navigation Menu */}
       <SidebarContent className="custom-scrollbar space-y-1">
-        {/* Navigation Group: Members & Profile */}
+
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
@@ -125,18 +107,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarGroup>
 
-        {/* Dynamic Months Navigation Menu (Running Month First, Distinct Colorful Icons) */}
-        <SidebarGroup>
+        {loading ? <div className="flex items-center justify-center p-4"><Loader /></div> : <SidebarGroup>
           <SidebarMenu className="mt-1 space-y-0.5">
-            {orderedMonths.map((month) => {
-              const href = `/months?month=${month.monthId}&year=${currentYear}`;
+            {data?.map((month) => {
+              const currentMonthParam = searchParams?.get('month');
+
+              const href = `/months?month=${month?.monthId}&year=${new Date().getFullYear()?.toString()}`;
               const isActive =
-                pathname === '/months' &&
-                (currentMonthParam
-                  ? currentMonthParam.toLowerCase() === month.monthId.toLowerCase()
-                  : month.monthIndex === currentMonthIndex);
-              const isRunningMonth = month.monthIndex === currentMonthIndex;
-              const IconComp = month.icon;
+                pathname === '/months' && currentMonthParam?.toLowerCase() === month.monthId.toLowerCase()
+
+              const IconComp = icons?.[month?.icon] || '';
 
               return (
                 <SidebarMenuItem key={month.monthId}>
@@ -147,12 +127,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         month.bgClass
                       )}
                     >
-                      <IconComp className={cn('size-3.5', month.colorClass)} />
+                      {IconComp && <IconComp className={cn('size-3.5', month.colorClass)} />}
                     </div>
-                    <span className={cn('truncate text-xs font-medium', isRunningMonth && 'font-bold text-zinc-900 dark:text-zinc-100')}>
+                    <span className={cn('truncate text-xs font-medium', month.isCurrentMonth && 'font-bold text-zinc-900 dark:text-zinc-100')}>
                       {month.monthName}
                     </span>
-                    {isRunningMonth && (
+                    {month.isCurrentMonth && (
                       <span className="ml-auto px-1.5 py-0.2 text-[9px] font-extrabold rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 group-data-[collapsible=icon]:hidden">
                         Current
                       </span>
@@ -162,10 +142,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               );
             })}
           </SidebarMenu>
-        </SidebarGroup>
+        </SidebarGroup>}
       </SidebarContent>
 
-      {/* Footer: User Profile Card (Clickable to /profile) */}
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
