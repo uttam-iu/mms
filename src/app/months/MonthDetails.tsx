@@ -4,28 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
     Calendar,
-    DollarSign,
-    Utensils,
-    TrendingUp,
-    Receipt,
-    PiggyBank,
-    Wallet,
-    Users,
     Plus,
-    ShoppingBag,
     Sparkles,
 } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter,
-} from '@/components/ui/dialog';
 import {
     generateMonthlyMealData,
 } from '@/dummyData/mealData';

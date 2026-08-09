@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { USER_TYPE } from "@/types/user.types"
-import { CheckCircle2, Coins, Pencil, UserPlus, Users, XCircle } from "lucide-react"
+import { CheckCircle2, Coins, Pencil, Users, XCircle } from "lucide-react"
 
 export const MemberTable = ({ filteredMembers, isAdminMode, handleToggleUserStatus, handleOpenCostModal, setEditingMember }: { filteredMembers: USER_TYPE[], isAdminMode: boolean, handleToggleUserStatus: (userId: number) => void, handleOpenCostModal: (member: USER_TYPE) => void, setEditingMember: (member: USER_TYPE) => void }) => {
 
