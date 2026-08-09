@@ -37,7 +37,7 @@ import {
 
 export default function ProfilePage() {
   const ctx = useAppState();
-  
+
   // Current user from state or fallback
   const user: USER_TYPE = ctx?.state?.user || {
     userId: 1,
@@ -151,10 +151,14 @@ export default function ProfilePage() {
               {/* Name & Role Details */}
               <div className="space-y-1">
                 <h1 className="text-xl font-black text-zinc-900 dark:text-zinc-100 flex items-center justify-center sm:justify-start gap-2">
-                  {profileData.fullName}
-                  <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
-                    <ShieldCheck size={11} /> {profileData.role === 'admin' ? 'House Manager (Admin)' : 'Member'}
-                  </span>
+                  <div>
+                    <div>
+                      {profileData.fullName}
+                    </div>
+                    <div className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                      <ShieldCheck size={11} /> {profileData.role === 'admin' ? 'House Manager (Admin)' : 'Member'}
+                    </div>
+                  </div>
                 </h1>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 flex items-center justify-center sm:justify-start gap-3">
                   <span className="flex items-center gap-1"><Mail size={12} /> {profileData.userName}</span>
@@ -163,14 +167,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Quick Action Button */}
-            <Button
-              onClick={() => setIsEditProfileOpen(true)}
-              size="sm"
-              className="h-9 text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white px-4 shadow-xs cursor-pointer flex items-center gap-1.5 rounded-xl"
-            >
-              <Pencil size={14} /> Edit Profile
-            </Button>
+
           </div>
         </div>
 
@@ -213,33 +210,30 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => setActiveTab('info')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'info'
-                  ? 'bg-white dark:bg-zinc-800 text-teal-700 dark:text-teal-400 shadow-xs'
-                  : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-              }`}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${activeTab === 'info'
+                ? 'bg-white dark:bg-zinc-800 text-teal-700 dark:text-teal-400 shadow-xs'
+                : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                }`}
             >
               <User size={14} /> Personal Information
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('preferences')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'preferences'
-                  ? 'bg-white dark:bg-zinc-800 text-teal-700 dark:text-teal-400 shadow-xs'
-                  : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-              }`}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${activeTab === 'preferences'
+                ? 'bg-white dark:bg-zinc-800 text-teal-700 dark:text-teal-400 shadow-xs'
+                : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                }`}
             >
               <Utensils size={14} /> Meal Preferences & System
             </button>
             <button
               type="button"
               onClick={() => setActiveTab('security')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${
-                activeTab === 'security'
-                  ? 'bg-white dark:bg-zinc-800 text-teal-700 dark:text-teal-400 shadow-xs'
-                  : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-              }`}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5 ${activeTab === 'security'
+                ? 'bg-white dark:bg-zinc-800 text-teal-700 dark:text-teal-400 shadow-xs'
+                : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                }`}
             >
               <Lock size={14} /> Security & Password
             </button>
@@ -379,11 +373,10 @@ export default function ProfilePage() {
 
               {passwordAlert && (
                 <div
-                  className={`p-3 rounded-xl text-xs flex items-center gap-2 border ${
-                    passwordAlert.type === 'success'
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
-                      : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800'
-                  }`}
+                  className={`p-3 rounded-xl text-xs flex items-center gap-2 border ${passwordAlert.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
+                    : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800'
+                    }`}
                 >
                   {passwordAlert.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
                   <span>{passwordAlert.message}</span>

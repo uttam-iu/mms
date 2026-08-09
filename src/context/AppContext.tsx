@@ -2,7 +2,7 @@
 
 import { USER_TYPE } from '@/types/user.types';
 import { ChatTarget } from '@/types/chat.types';
-import { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface AppState {
   user: USER_TYPE | null;
@@ -10,12 +10,14 @@ interface AppState {
   activeChatTarget: ChatTarget | null;
   isChatOpen: boolean;
   openChats: ChatTarget[];
+  title: string;
 }
 
 interface AppContextType {
   state: AppState;
   setUser: (user: USER_TYPE | null) => void;
-  toggleTheme: (theme: 'light' | 'dark') => void;
+  toggleTheme: () => void;
+  setTitle: (title: string) => void;
   openChat: (target: ChatTarget) => void;
   closeChat: (targetId?: string | number) => void;
   updateActiveChatTarget: (updatedTarget: ChatTarget) => void;
@@ -30,20 +32,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
     activeChatTarget: null,
     isChatOpen: false,
     openChats: [],
+    title: '',
   });
 
-  const setUser = (user: USER_TYPE | null): void => {
-    setState((prev) => ({ ...prev, user }));
-  };
+  const setUser = React.useCallback((user: USER_TYPE | null): void => {
+    setState((prev) => (prev.user === user ? prev : { ...prev, user }));
+  }, []);
 
-  const toggleTheme = (): void => {
+  const toggleTheme = React.useCallback((): void => {
     setState((prev) => ({
       ...prev,
       theme: prev.theme === 'light' ? 'dark' : 'light',
     }));
-  };
+  }, []);
 
-  const openChat = (target: ChatTarget): void => {
+  const setTitle = React.useCallback((title: string): void => {
+    setState((prev) => (prev.title === title ? prev : { ...prev, title }));
+  }, []);
+
+  const openChat = React.useCallback((target: ChatTarget): void => {
     setState((prev) => {
       const exists = prev.openChats.some((c) => c.id.toString() === target.id.toString());
       const updatedOpenChats = exists
@@ -57,9 +64,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         openChats: updatedOpenChats,
       };
     });
-  };
+  }, []);
 
-  const closeChat = (targetId?: string | number): void => {
+  const closeChat = React.useCallback((targetId?: string | number): void => {
     setState((prev) => {
       if (!targetId) {
         return {
@@ -80,18 +87,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isChatOpen: updatedOpenChats.length > 0,
       };
     });
-  };
+  }, []);
 
-  const updateActiveChatTarget = (updatedTarget: ChatTarget): void => {
+  const updateActiveChatTarget = React.useCallback((updatedTarget: ChatTarget): void => {
     setState((prev) => ({
       ...prev,
       activeChatTarget: updatedTarget,
       openChats: prev.openChats.map((c) => (c.id.toString() === updatedTarget.id.toString() ? updatedTarget : c)),
     }));
-  };
+  }, []);
+
+  const contextValue = React.useMemo(
+    () => ({ state, setUser, toggleTheme, setTitle, openChat, closeChat, updateActiveChatTarget }),
+    [state, setUser, toggleTheme, setTitle, openChat, closeChat, updateActiveChatTarget]
+  );
 
   return (
-    <AppContext.Provider value={{ state, setUser, toggleTheme, openChat, closeChat, updateActiveChatTarget }}>
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );

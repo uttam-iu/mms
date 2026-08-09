@@ -1,9 +1,10 @@
+import Loader from "@/components/Loader"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { USER_TYPE } from "@/types/user.types"
 import { CheckCircle2, Coins, Pencil, Users, XCircle } from "lucide-react"
 
-export const MemberTable = ({ filteredMembers, isAdminMode, handleToggleUserStatus, handleOpenCostModal, setEditingMember }: { filteredMembers: USER_TYPE[], isAdminMode: boolean, handleToggleUserStatus: (userId: number) => void, handleOpenCostModal: (member: USER_TYPE) => void, setEditingMember: (member: USER_TYPE) => void }) => {
+export const MemberTable = ({ filteredMembers, isLoading, isAdminMode, handleToggleUserStatus, handleOpenCostModal, setEditingMember }: { filteredMembers: USER_TYPE[], isLoading: boolean, isAdminMode: boolean, handleToggleUserStatus: (userId: number) => void, handleOpenCostModal: (member: USER_TYPE) => void, setEditingMember: (member: USER_TYPE) => void }) => {
 
     return <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs overflow-hidden">
         <div className="p-2 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
@@ -12,11 +13,13 @@ export const MemberTable = ({ filteredMembers, isAdminMode, handleToggleUserStat
             </h3>
         </div>
 
-        {filteredMembers.length === 0 ? (
+        {filteredMembers?.length === 0 || isLoading ? (
             <div className="p-12 text-center text-xs text-zinc-400 space-y-2">
-                <Users size={32} className="mx-auto text-zinc-400" />
-                <p className="font-semibold">No member records match the applied filter.</p>
-                <p>Try modifying your search or status selection and click Perform Filter.</p>
+                {isLoading ? <div className="flex justify-center items-center"><Loader /></div> : <>
+                    <Users size={32} className="mx-auto text-zinc-400" />
+                    <p className="font-semibold">No member records match the applied filter.</p>
+                    <p>Try modifying your search or status selection and click Perform Filter.</p>
+                </>}
             </div>
         ) : (
             <div className="overflow-x-auto">

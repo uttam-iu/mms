@@ -23,7 +23,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   X,
   Minus,
@@ -492,11 +492,10 @@ function SingleChatBox({
 
                   <div className={`max-w-[85%] space-y-0.5 ${isSelf ? 'items-end' : 'items-start'}`}>
                     <div
-                      className={`p-2 rounded-xl text-xs leading-relaxed font-normal break-words shadow-2xs relative ${
-                        msg.reactions && msg.reactions.length > 0 ? 'mb-2' : ''
-                      } ${isSelf
-                        ? 'bg-teal-700 text-white rounded-br-none'
-                        : 'bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-700/80 rounded-bl-none'
+                      className={`p-2 rounded-xl text-xs leading-relaxed font-normal break-words shadow-2xs relative ${msg.reactions && msg.reactions.length > 0 ? 'mb-2' : ''
+                        } ${isSelf
+                          ? 'bg-teal-700 text-white rounded-br-none'
+                          : 'bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200/80 dark:border-zinc-700/80 rounded-bl-none'
                         }`}
                     >
                       {msg.replyTo && (
@@ -538,11 +537,10 @@ function SingleChatBox({
                                   href={att.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className={`flex items-center gap-2 p-1.5 rounded-lg border text-[11px] transition-colors ${
-                                    isSelf
+                                  className={`flex items-center gap-2 p-1.5 rounded-lg border text-[11px] transition-colors ${isSelf
                                       ? 'bg-teal-800/60 border-teal-600/60 text-white hover:bg-teal-800'
                                       : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800'
-                                  }`}
+                                    }`}
                                 >
                                   <FileText size={14} className="shrink-0 text-teal-400" />
                                   <div className="min-w-0 flex-1 truncate">
@@ -576,9 +574,8 @@ function SingleChatBox({
                       {/* Reactions Overlay Pill: bottom-right for incoming, bottom-left for outgoing */}
                       {msg.reactions && msg.reactions.length > 0 && (
                         <div
-                          className={`absolute -bottom-2.5 ${
-                            isSelf ? 'left-2' : 'right-2'
-                          } flex items-center gap-0.5 z-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-full px-1.5 py-0.5 shadow-md`}
+                          className={`absolute -bottom-2.5 ${isSelf ? 'left-2' : 'right-2'
+                            } flex items-center gap-0.5 z-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-full px-1.5 py-0.5 shadow-md`}
                         >
                           {msg.reactions.map((reaction, rIdx) => {
                             const hasUserReacted = reaction.users.includes(currentUser.fullName);
@@ -587,9 +584,8 @@ function SingleChatBox({
                                 key={rIdx}
                                 type="button"
                                 onClick={() => onAddReaction(targetId, msg.id, reaction.emoji)}
-                                className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-0.5 transition-transform hover:scale-125 cursor-pointer ${
-                                  hasUserReacted ? 'text-amber-500 font-extrabold' : 'text-zinc-700 dark:text-zinc-300'
-                                }`}
+                                className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-0.5 transition-transform hover:scale-125 cursor-pointer ${hasUserReacted ? 'text-amber-500 font-extrabold' : 'text-zinc-700 dark:text-zinc-300'
+                                  }`}
                                 title={reaction.users.join(', ')}
                               >
                                 <span>{reaction.emoji}</span>

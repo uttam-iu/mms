@@ -34,7 +34,7 @@ export default function Toolbar({
 		} else if (typeof window !== 'undefined' && !userId) {
 			window.location.replace('/login');
 		}
-	}, []);
+	}, [ctx]);
 
 	const onLogout = (): void => {
 		localStorage.removeItem('user');
@@ -46,6 +46,9 @@ export default function Toolbar({
 		<div className="w-full h-[48px] bg-white dark:bg-zinc-950 sticky top-0 z-20 border-b border-zinc-200 dark:border-zinc-800 px-4 flex justify-between items-center">
 			<div className="flex items-center gap-3">
 				{children}
+				<div className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+					{ctx?.state?.title || ''}
+				</div>
 			</div>
 			{showLogoutBtn && <div className="flex items-center gap-3">
 				<DropdownMenu>

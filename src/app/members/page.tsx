@@ -16,6 +16,8 @@ import { EditMemberDialog } from './EditMemberDialog';
 import { AddFixedCostDialog } from './AddFixedCostDialog';
 import { MemberFilter } from './MemberFilter';
 import { MemberTable } from './MemberTable';
+import { useApiCall } from '@/hooks/useApiCall';
+import { useTitle } from '@/hooks/useTitle';
 
 const DEFAULT_INDIVIDUAL_COSTS: { [key: number]: IndividualCostItem[] } = {
   1: [{ id: 'ic-1-1', costType: 'House Rent', amount: 3500 }, { id: 'ic-1-2', costType: 'Room Gas Addon', amount: 300 }],
@@ -34,30 +36,16 @@ const INITIAL_MEMBERS: USER_TYPE[] = USERS_SEED.map((u, idx) => ({
 }));
 
 export default function MembersPage() {
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
 
-  const paramSearch = searchParams.get('search') || '';
-  const paramStatus = searchParams.get('status') || 'all';
+  // const paramSearch = searchParams.get('search') || '';
+  // const paramStatus = searchParams.get('status') || 'all';
 
   const [isAdminMode, setIsAdminMode] = useState<boolean>(true);
-  const [members, setMembers] = useState<USER_TYPE[]>(INITIAL_MEMBERS);
 
 
-  const filteredMembers = useMemo(() => {
-    return members.filter((m) => {
-      const q = paramSearch.toLowerCase().trim();
-      const matchesSearch =
-        !q ||
-        m.fullName.toLowerCase().includes(q) ||
-        m.userName.toLowerCase().includes(q) ||
-        m.phone.includes(q);
+  const { isLoading, resp } = useApiCall('members', 'GET', {});
 
-      const matchesStatus =
-        paramStatus === 'all' || !paramStatus || (m.status || 'active') === paramStatus;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [members, paramSearch, paramStatus]);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<USER_TYPE | null>(null);
@@ -77,31 +65,11 @@ export default function MembersPage() {
     e.preventDefault();
     if (!managingCostMember) return;
 
-    const validCosts = memberCosts.filter(
-      (c) => c.costType.trim() !== '' && !isNaN(Number(c.amount))
-    );
-
-    setMembers((prev) =>
-      prev.map((m) =>
-        m.userId === managingCostMember.userId
-          ? { ...m, individualCosts: validCosts }
-          : m
-      )
-    );
-
-    setManagingCostMember(null);
+    console.log(managingCostMember)
   };
 
   const handleToggleUserStatus = (userId: number) => {
-    setMembers((prev) =>
-      prev.map((m) => {
-        if (m.userId === userId) {
-          const nextStatus = m.status === 'active' ? 'inactive' : 'active';
-          return { ...m, status: nextStatus };
-        }
-        return m;
-      })
-    );
+    console.log('handleToggleUserStatus', userId)
   };
 
   const handleAddMemberSubmit = (e: React.FormEvent, newMemberData: any) => {
@@ -120,7 +88,7 @@ export default function MembersPage() {
       individualCosts: [{ id: `ic-${Date.now()}-1`, costType: 'House Rent', amount: 3500 }],
     };
 
-    setMembers((prev) => [newMember, ...prev]);
+    console.log(newMember)
     setIsAddModalOpen(false);
   };
 
@@ -128,11 +96,11 @@ export default function MembersPage() {
     e.preventDefault();
     if (!editingMember) return;
 
-    setMembers((prev) =>
-      prev.map((m) => (m.userId === editingMember.userId ? editingMember : m))
-    );
+    console.log(editingMember)
     setEditingMember(null);
   };
+
+  useTitle('House Members');
 
   return (
     <div className="min-h-screen bg-zinc-50/60 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans pb-4">
@@ -145,9 +113,9 @@ export default function MembersPage() {
             </div>
             <div>
               <h1 className="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                House Members Directory Table
+                House Members
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
-                  {filteredMembers.length} Total Shown
+                  {resp?.data?.length} Total Shown
                 </span>
               </h1>
             </div>
@@ -188,7 +156,7 @@ export default function MembersPage() {
 
       <div className="max-w-7xl mx-auto px-2 pt-2 space-y-6">
         <MemberFilter />
-        <MemberTable filteredMembers={filteredMembers} isAdminMode={isAdminMode} handleToggleUserStatus={handleToggleUserStatus} handleOpenCostModal={handleOpenCostModal} setEditingMember={setEditingMember} />
+        <MemberTable filteredMembers={resp?.data || []} isLoading={isLoading} isAdminMode={isAdminMode} handleToggleUserStatus={handleToggleUserStatus} handleOpenCostModal={handleOpenCostModal} setEditingMember={setEditingMember} />
       </div>
 
       <AddMemberDialog isAddModalOpen={isAddModalOpen} setIsAddModalOpen={setIsAddModalOpen} handleAddMemberSubmit={handleAddMemberSubmit} />

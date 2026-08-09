@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+
 'use client';
 
 import * as React from 'react';
@@ -26,6 +26,7 @@ import { useAppState } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
 import axios from 'axios';
 import Loader from '../Loader';
+import { useApiCall } from '@/hooks/useApiCall';
 
 interface MONTH_META {
   monthId: string;
@@ -42,22 +43,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-
-  const [loading, setLoading] = React.useState<boolean>(false);
-  const [data, setData] = React.useState<MONTH_META[]>([]);
-
-  React.useEffect(() => {
-    setLoading(true);
-    axios.get(process.env.NEXT_PUBLIC_API_URL + 'menus')
-      .then(response => {
-        setLoading(false);
-        setData(response?.data?.data || []);
-      })
-      .catch(() => {
-        setLoading(false);
-        setData([]);
-      });
-  }, [])
+  const { isLoading, resp } = useApiCall('menus', 'GET', {});
 
   return (
     <Sidebar collapsible="icon" className="border-r border-zinc-200 dark:border-zinc-800" {...props}>
@@ -107,9 +93,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarGroup>
 
-        {loading ? <div className="flex items-center justify-center p-4"><Loader /></div> : <SidebarGroup>
+        {isLoading ? <div className="flex items-center justify-center p-4"><Loader /></div> : <SidebarGroup>
           <SidebarMenu className="mt-1 space-y-0.5">
-            {data?.map((month) => {
+            {resp?.data?.map((month: MONTH_META) => {
               const currentMonthParam = searchParams?.get('month');
 
               const href = `/months?month=${month?.monthId}&year=${new Date().getFullYear()?.toString()}`;

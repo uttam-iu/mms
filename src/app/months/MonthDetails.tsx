@@ -29,6 +29,7 @@ import { DatewiseSummaryTable } from './DatewiseSummaryTable';
 import { BazarwiseExpenseSummaryTable } from './BazarExpenseSumaryTable';
 import { MemberDepositLogTable } from './MemberDepositLogTable';
 import { ExtraExpenseTable } from './ExtraExpenseTable';
+import { useTitle } from '@/hooks/useTitle';
 
 export default function MonthDetailPage() {
     const searchParams = useSearchParams();
@@ -167,26 +168,12 @@ export default function MonthDetailPage() {
         setIsAddDepositOpen(false);
     };
 
-
+    useTitle('Monthly Summary');
 
     return (
         <div className="min-h-screen w-full min-w-0 bg-zinc-50/60 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans pb-12">
             <div className="sticky top-[-8px] z-20 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-2 py-2 shadow-xs w-full min-w-0">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-3 w-full min-w-0">
-                    <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-lg bg-teal-600/10 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400 flex items-center justify-center font-bold">
-                            <Calendar size={18} />
-                        </div>
-                        <div>
-                            <h1 className="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                                {mealData.monthName} {mealData.year}
-                                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
-                                    {mealData?.daysInMonth} Days
-                                </span>
-                            </h1>
-
-                        </div>
-                    </div>
+                <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-end gap-3 w-full min-w-0">
                     <MonthFilter />
                 </div>
             </div>

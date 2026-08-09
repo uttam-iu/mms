@@ -43,7 +43,7 @@ export const MonthFilter = () => {
     };
 
     return (
-        <div className="flex items-center gap-2.5 flex-wrap w-full md:w-auto bg-zinc-100/80 dark:bg-zinc-800/60 p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700/60">
+        <div className="flex items-center gap-2.5 flex-wrap w-full md:w-auto ">
             {/* Mandatory Year Dropdown */}
             <div className="flex items-center gap-1.5">
                 <select
