@@ -7,17 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Dummy_Uers from "@/dummyData/users.json";
 import Image from "next/image";
 import logoIcon from '../../../public/logo-white.png';
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import { setupSocket } from '@/lib/socket';
 import { useAppState } from '@/context/AppContext';
 import { setJwtToken } from "@/lib/localStorageHelper";
 
 export function LoginForm() {
-  const router = useRouter();
+  // const router = useRouter();
   const ctx = useAppState();
 
   const [showPassword, setShowPassword] = React.useState<boolean>(false);
@@ -31,16 +29,16 @@ export function LoginForm() {
     setErrorMessage('');
 
     // Elements gulo target kora
-    const target = e.currentTarget?.elements as typeof e.currentTarget.elements & {
-      userName: { value: string };
-      password: { value: string };
-    };
+    // const target = e.currentTarget?.elements as typeof e.currentTarget.elements & {
+    //   userName: { value: string };
+    //   password: { value: string };
+    // };
 
-    const userName = target?.userName?.value;
-    const password = target?.password?.value;
+    // const userName = target?.userName?.value;
+    // const password = target?.password?.value;
 
     setLoading(true);
-    const apiPrms = { userName, password };
+    // const apiPrms = { userName, password };
     ctx?.setUser({
       "userId": 1,
       "phone": "01617630101",

@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { useState } from 'react';
 import {
   Users,
   UserPlus,
@@ -9,7 +9,6 @@ import {
   Unlock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import USERS_SEED from '@/dummyData/users.json';
 import { USER_TYPE, IndividualCostItem } from '@/types/user.types';
 import { AddMemberDialog } from './AddMemberDialog';
 import { EditMemberDialog } from './EditMemberDialog';
@@ -19,21 +18,6 @@ import { MemberTable } from './MemberTable';
 import { useApiCall } from '@/hooks/useApiCall';
 import { useTitle } from '@/hooks/useTitle';
 
-const DEFAULT_INDIVIDUAL_COSTS: { [key: number]: IndividualCostItem[] } = {
-  1: [{ id: 'ic-1-1', costType: 'House Rent', amount: 3500 }, { id: 'ic-1-2', costType: 'Room Gas Addon', amount: 300 }],
-  2: [{ id: 'ic-2-1', costType: 'House Rent', amount: 4000 }],
-  3: [{ id: 'ic-3-1', costType: 'House Rent', amount: 3800 }, { id: 'ic-3-2', costType: 'Parking Fee', amount: 500 }],
-  4: [{ id: 'ic-4-1', costType: 'House Rent', amount: 3500 }],
-  5: [{ id: 'ic-5-1', costType: 'House Rent', amount: 3500 }],
-};
-
-const INITIAL_MEMBERS: USER_TYPE[] = USERS_SEED.map((u, idx) => ({
-  ...u,
-  role: idx === 0 ? 'admin' : 'member',
-  status: idx === 4 ? 'inactive' : 'active',
-  joinedDate: `2024-0${(idx % 6) + 1}-15`,
-  individualCosts: DEFAULT_INDIVIDUAL_COSTS[u.userId] || [{ id: `ic-${u.userId}-1`, costType: 'House Rent', amount: 3500 }],
-}));
 
 export default function MembersPage() {
   // const searchParams = useSearchParams();

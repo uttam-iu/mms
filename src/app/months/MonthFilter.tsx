@@ -1,3 +1,5 @@
+"use client";
+
 import { AVAILABLE_YEARS, MONTH_LIST } from "@/lib/utils";
 import { Filter } from "lucide-react";
 import { Button } from '@/components/ui/button';
@@ -14,22 +16,22 @@ export const MonthFilter = () => {
     const paramMonth = searchParams.get('month');
 
     // Filter local state
-    const [selectedYear, setSelectedYear] = React.useState<number>(
-        paramYear ? parseInt(paramYear, 10) : 2026
+    const [selectedYear, setSelectedYear] = React.useState<string>(
+        paramYear ? paramYear : '2026'
     );
     const [selectedMonth, setSelectedMonth] = React.useState<string>(
         paramMonth || 'january'
     );
 
     // Sync state if URL changes
-    React.useEffect(() => {
-        if (paramYear) {
-            setSelectedYear(parseInt(paramYear, 10));
-        }
-        if (paramMonth) {
-            setSelectedMonth(paramMonth);
-        }
-    }, [paramYear, paramMonth]);
+    // React.useEffect(() => {
+    //     if (paramYear)
+    //         setSelectedYear(paramYear);
+
+    //     if (paramMonth)
+    //         setSelectedMonth(paramMonth);
+
+    // }, [paramYear, paramMonth]);
 
 
     // Handle Filter Perform Action
@@ -48,7 +50,7 @@ export const MonthFilter = () => {
             <div className="flex items-center gap-1.5">
                 <select
                     value={selectedYear}
-                    onChange={(e) => setSelectedYear(Number(e.target.value))}
+                    onChange={(e) => setSelectedYear(e.target.value)}
                     className="h-8 text-xs font-semibold rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-2 text-zinc-800 dark:text-zinc-200 focus:outline-hidden focus:ring-2 focus:ring-teal-500 cursor-pointer"
                 >
                     {AVAILABLE_YEARS.map((yr) => (

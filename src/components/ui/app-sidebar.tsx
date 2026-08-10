@@ -24,7 +24,6 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import logoIcon from '../../../public/logo.png';
 import { useAppState } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
-import axios from 'axios';
 import Loader from '../Loader';
 import { useApiCall } from '@/hooks/useApiCall';
 
@@ -32,7 +31,7 @@ interface MONTH_META {
   monthId: string;
   monthName: string;
   monthIndex: number; // 0 to 11
-  icon: React.ComponentType<{ className?: string }>;
+  icon: string;
   colorClass: string;
   bgClass: string;
   isCurrentMonth: boolean;
@@ -102,7 +101,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               const isActive =
                 pathname === '/months' && currentMonthParam?.toLowerCase() === month.monthId.toLowerCase()
 
-              const IconComp = icons?.[month?.icon] || '';
+              const IconComp = icons[month?.icon as keyof typeof icons];
 
               return (
                 <SidebarMenuItem key={month.monthId}>

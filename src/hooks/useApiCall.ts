@@ -20,6 +20,7 @@ export function useApiCall(endpoint = '', method: ApiMethod = 'GET', params: Rec
   const [resp, setResp] = React.useState<any>(null)
   const [error, setError] = React.useState<any>(null)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/use-memo
   const serializedParams = React.useMemo(() => JSON.stringify(params ?? {}), [JSON.stringify(params ?? {})])
   const stableParams = React.useMemo(() => {
     try {
@@ -27,10 +28,12 @@ export function useApiCall(endpoint = '', method: ApiMethod = 'GET', params: Rec
     } catch {
       return params
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serializedParams])
 
   const requestKey = React.useMemo(
     () => buildRequestKey(endpoint, method, stableParams),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [endpoint, method, serializedParams]
   )
 

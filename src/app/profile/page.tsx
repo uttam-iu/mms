@@ -30,9 +30,6 @@ import {
   PiggyBank,
   Wallet,
   Sparkles,
-  Heart,
-  FileText,
-  Key,
 } from 'lucide-react';
 
 export default function ProfilePage() {
