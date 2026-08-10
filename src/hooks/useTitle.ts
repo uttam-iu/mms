@@ -2,21 +2,21 @@ import * as React from "react"
 import { useAppState } from "@/context/AppContext"
 
 export function useTitle(title: string) {
-  const ctx = useAppState()
+  const ctx = useAppState();
 
-  const setTitle = ctx?.setTitle
+  const setTitle = ctx?.setTitle;
 
   React.useEffect(() => {
-    if (!setTitle) return
+    if (!setTitle) return;
 
-    setTitle(title)
-    document.title = `${title} | MMS`
+    setTitle(title);
+    document.title = `${title} | MMS`;
 
     return () => {
-      setTitle('')
-      document.title = 'MMS'
+      setTitle('');
+      document.title = 'MMS';
     }
-  }, [setTitle, title])
+  }, [setTitle, title]);
 
-  return title
-}
+  return title;
+};
