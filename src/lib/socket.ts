@@ -4,8 +4,7 @@ let socket: Socket | null = null;
 
 export const SOCKET_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL ||
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') ||
-  'http://192.168.0.105:5000';
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') 
 
 /**
  * Initialize and connect WebSocket via socket.io-client

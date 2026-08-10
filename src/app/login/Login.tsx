@@ -57,7 +57,7 @@ export function LoginForm() {
 
 
     // axios
-    //   .post((process.env.NEXT_PUBLIC_API_URL || 'http://192.168.0.105:5000/').replace(/\/+$/, '') + '/user/login', apiPrms, {
+    //   .post((process.env.NEXT_PUBLIC_API_URL).replace(/\/+$/, '') + '/user/login', apiPrms, {
     //     withCredentials: true,
     //   })
     //   .then((res) => {
