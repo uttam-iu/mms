@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { getJwtToken } from './localStorageHelper';
 
 let socket: Socket | null = null;
 
@@ -9,13 +10,15 @@ export const SOCKET_URL =
 /**
  * Initialize and connect WebSocket via socket.io-client
  */
-export const setupSocket = (token?: string): Socket => {
-  if (socket && socket.connected) {
+export const setupSocket = (): Socket => {
+  const token = getJwtToken();
+  console.log('token:', token);
+  if (socket && socket?.connected) {
     return socket;
   }
 
   socket = io(SOCKET_URL, {
-    autoConnect: true,
+    autoConnect: false,
     transports: ['websocket', 'polling'],
     auth: {
       token: token || '',

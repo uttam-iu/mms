@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 const MY_ACCOUNT = 'my-account';
 const RECEIVER_ACCOUNT = 'receiver-account';
-const JWT_TOKEN = 'JWT_TOKEN';
+export const JWT_TOKEN = 'JWT_TOKEN';
 
 const setDataToLocalStorage = (name:string, value:string) => {
     localStorage.setItem(name, value);

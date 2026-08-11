@@ -9,13 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import logoIcon from '../../../public/logo-white.png';
-// import { useRouter } from 'next/navigation';
-import { setupSocket } from '@/lib/socket';
 import { useAppState } from '@/context/AppContext';
 import { setJwtToken } from "@/lib/localStorageHelper";
+import axios from "axios";
 
 export function LoginForm() {
-  // const router = useRouter();
   const ctx = useAppState();
 
   const [showPassword, setShowPassword] = React.useState<boolean>(false);
@@ -28,56 +26,55 @@ export function LoginForm() {
     setLoginError(false);
     setErrorMessage('');
 
-    // Elements gulo target kora
-    // const target = e.currentTarget?.elements as typeof e.currentTarget.elements & {
-    //   userName: { value: string };
-    //   password: { value: string };
-    // };
+    const target = e.currentTarget?.elements as typeof e.currentTarget.elements & {
+      userName: { value: string };
+      password: { value: string };
+    };
 
-    // const userName = target?.userName?.value;
-    // const password = target?.password?.value;
+    const userName = target?.userName?.value;
+    const password = target?.password?.value;
 
     setLoading(true);
-    // const apiPrms = { userName, password };
-    ctx?.setUser({
-      "userId": 1,
-      "phone": "01617630101",
-      "userName": "uttam@k.com",
-      "fullName": "Uttam Kumar",
-      "photoUrl": "https://github.com/shadcn.png"
-    },)
-    setJwtToken('fsdff7er26rwehwefdydr2rd');
-    setupSocket();
-    document.cookie = 'auth_token=fsdff7er26rwehwefdydr2rd; path=/';
-    document.cookie = `user=1; path=/`;
-    document.cookie = 'max-age=86400; SameSite=Strict; path=/';
-    window.location.reload()
+    const apiPrms = { userName, password };
+    // ctx?.setUser({
+    //   "userId": 1,
+    //   "phone": "01617630101",
+    //   "userName": "uttam@k.com",
+    //   "fullName": "Uttam Kumar",
+    //   "photoUrl": "https://github.com/shadcn.png"
+    // },)
+    // setJwtToken('fsdff7er26rwehwefdydr2rd');
+    // setupSocket();
+    // document.cookie = 'auth_token=fsdff7er26rwehwefdydr2rd; path=/';
+    // document.cookie = `user=1; path=/`;
+    // document.cookie = 'max-age=86400; SameSite=Strict; path=/';
+    // window.location.reload()
 
 
-    // axios
-    //   .post((process.env.NEXT_PUBLIC_API_URL).replace(/\/+$/, '') + '/user/login', apiPrms, {
-    //     withCredentials: true,
-    //   })
-    //   .then((res) => {
-    //     setLoading(false);
-    //     if (res?.data?.success) {
-    //       ctx?.setUser(res?.data?.data?.user)
-    //       setJwtToken(res?.data?.data?.token);
-    //       setupSocket();
-    //       document.cookie = 'auth_token=your_jwt_token_here; path=/';
-    //       document.cookie = `user=${res?.data?.data?.user?.userId}; path=/`;
-    //       document.cookie = 'max-age=86400; SameSite=Strict; path=/';
-    //       window.location.reload()
-    //     } else {
-    //       setLoginError(true);
-    //       setErrorMessage(res?.data?.message || 'Login failed.');
-    //       console.log(res?.data?.message);
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     setLoading(false);
-    //     console.log('login-err', err);
-    //   });
+    axios
+      .post(process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') + '/user/login', apiPrms, {
+        withCredentials: true,
+      })
+      .then((res) => {
+        setLoading(false);
+        if (res?.data?.success) {
+          console.log('login-res', res?.data);
+          ctx?.setUser(res?.data?.data?.user)
+          setJwtToken(res?.data?.data?.token);
+          document.cookie = `auth_token=${res?.data?.data?.token}; path=/`;
+          document.cookie = `user=${res?.data?.data?.user?.userId}; path=/`;
+          document.cookie = 'max-age=86400; SameSite=Strict; path=/';
+          window.location.reload()
+        } else {
+          setLoginError(true);
+          setErrorMessage(res?.data?.message || 'Login failed.');
+          console.log(res?.data?.message);
+        }
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log('login-err', err);
+      });
   };
 
   return (

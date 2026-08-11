@@ -15,6 +15,7 @@ import { useAppState } from '@/context/AppContext';
 import Dummy_Users from "@/dummyData/users.json";
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import Link from 'next/link';
+import { disconnectSocket } from '@/lib/socket';
 
 export default function Toolbar({
 	children,
@@ -37,6 +38,8 @@ export default function Toolbar({
 	}, [ctx]);
 
 	const onLogout = (): void => {
+		disconnectSocket();
+		ctx?.resetContext()
 		localStorage.removeItem('user');
 		document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
 		window.location.reload();

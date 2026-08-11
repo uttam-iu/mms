@@ -24,8 +24,8 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import logoIcon from '../../../public/logo.png';
 import { useAppState } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
-import Loader from '../Loader';
 import { useApiCall } from '@/hooks/useApiCall';
+import { setupSocket } from '@/lib/socket';
 
 interface MONTH_META {
   monthId: string;
@@ -41,6 +41,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const ctx = useAppState();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  React.useEffect(() => {
+    const socket = setupSocket();
+    socket.connect()
+  }, []);
 
   const { isLoading, resp } = useApiCall('menus', 'GET', {});
 
@@ -92,7 +97,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarGroup>
 
-        {isLoading ? <div className="flex items-center justify-center p-4"><Loader /></div> : <SidebarGroup>
+        {isLoading ? <div className="flex items-center justify-center p-4">Loading...</div> : <SidebarGroup>
           <SidebarMenu className="mt-1 space-y-0.5">
             {resp?.data?.map((month: MONTH_META) => {
               const currentMonthParam = searchParams?.get('month');

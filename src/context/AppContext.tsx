@@ -21,19 +21,22 @@ interface AppContextType {
   openChat: (target: ChatTarget) => void;
   closeChat: (targetId?: string | number) => void;
   updateActiveChatTarget: (updatedTarget: ChatTarget) => void;
+  resetContext: () => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AppState>({
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const initialState: AppState = {
     user: null,
     theme: 'light',
     activeChatTarget: null,
     isChatOpen: false,
     openChats: [],
     title: '',
-  });
+  }
+  const [state, setState] = useState<AppState>(initialState);
 
   const setUser = React.useCallback((user: USER_TYPE | null): void => {
     setState((prev) => (prev.user === user ? prev : { ...prev, user }));
@@ -97,9 +100,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const resetContext = React.useCallback(() => {
+    setState(initialState)
+  }, [initialState])
+
   const contextValue = React.useMemo(
-    () => ({ state, setUser, toggleTheme, setTitle, openChat, closeChat, updateActiveChatTarget }),
-    [state, setUser, toggleTheme, setTitle, openChat, closeChat, updateActiveChatTarget]
+    () => ({ resetContext, state, setUser, toggleTheme, setTitle, openChat, closeChat, updateActiveChatTarget }),
+    [resetContext, state, setUser, toggleTheme, setTitle, openChat, closeChat, updateActiveChatTarget]
   );
 
   return (
