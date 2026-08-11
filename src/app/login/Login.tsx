@@ -36,29 +36,15 @@ export function LoginForm() {
 
     setLoading(true);
     const apiPrms = { userName, password };
-    // ctx?.setUser({
-    //   "userId": 1,
-    //   "phone": "01617630101",
-    //   "userName": "uttam@k.com",
-    //   "fullName": "Uttam Kumar",
-    //   "photoUrl": "https://github.com/shadcn.png"
-    // },)
-    // setJwtToken('fsdff7er26rwehwefdydr2rd');
-    // setupSocket();
-    // document.cookie = 'auth_token=fsdff7er26rwehwefdydr2rd; path=/';
-    // document.cookie = `user=1; path=/`;
-    // document.cookie = 'max-age=86400; SameSite=Strict; path=/';
-    // window.location.reload()
-
 
     axios
       .post(process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') + '/user/login', apiPrms, {
         withCredentials: true,
       })
       .then((res) => {
+        // console.log(res)
         setLoading(false);
         if (res?.data?.success) {
-          console.log('login-res', res?.data);
           ctx?.setUser(res?.data?.data?.user)
           setJwtToken(res?.data?.data?.token);
           document.cookie = `auth_token=${res?.data?.data?.token}; path=/`;

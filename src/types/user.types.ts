@@ -5,13 +5,15 @@ export interface IndividualCostItem {
 }
 
 export interface USER_TYPE {
-  userId: number;
+  userId?: number;
   phone: string;
   userName: string;
+  password?: string;
   fullName: string;
   photoUrl: string | null;
   role?: 'admin' | 'member';
   status?: 'active' | 'inactive';
-  joinedDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
   individualCosts?: IndividualCostItem[];
 }

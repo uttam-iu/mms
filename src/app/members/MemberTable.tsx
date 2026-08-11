@@ -1,19 +1,23 @@
 import Loader from "@/components/Loader"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { displayFormattedDate } from "@/lib/utils"
 import { USER_TYPE } from "@/types/user.types"
 import { CheckCircle2, Coins, Pencil, Users, XCircle } from "lucide-react"
 
-export const MemberTable = ({ filteredMembers, isLoading, isAdminMode, handleToggleUserStatus, handleOpenCostModal, setEditingMember }: { filteredMembers: USER_TYPE[], isLoading: boolean, isAdminMode: boolean, handleToggleUserStatus: (userId: number) => void, handleOpenCostModal: (member: USER_TYPE) => void, setEditingMember: (member: USER_TYPE) => void }) => {
+export const MemberTable = ({ memberList, isLoading, setDialogProps }: { memberList: USER_TYPE[], isLoading: boolean, setDialogProps: (dialogProps: { type: 'ADD' | 'UPDATE' | 'DELETE' | 'COST' | 'ACTIVATE' | 'DEACTIVATE', row?: USER_TYPE | null }) => void }) => {
 
     return <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs overflow-hidden">
         <div className="p-2 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
             <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                 House Members Table
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                    {memberList?.length} Total Shown
+                </span>
             </h3>
         </div>
 
-        {filteredMembers?.length === 0 || isLoading ? (
+        {memberList?.length === 0 || isLoading ? (
             <div className="p-12 text-center text-xs text-zinc-400 space-y-2">
                 {isLoading ? <div className="flex justify-center items-center"><Loader /></div> : <>
                     <Users size={32} className="mx-auto text-zinc-400" />
@@ -34,19 +38,19 @@ export const MemberTable = ({ filteredMembers, isLoading, isAdminMode, handleTog
                             <th className="p-1">Fixed Individual Costs</th>
                             <th className="p-1">Joined Date</th>
                             <th className="p-1 text-right">
-                                {isAdminMode ? 'Admin Actions' : 'Permissions'}
+                                {'Admin Actions'}
                             </th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/60 text-zinc-800 dark:text-zinc-200">
-                        {filteredMembers.map((member, index) => {
+                        {memberList?.map((member: USER_TYPE, index: number) => {
                             const isActive = (member.status || 'active') === 'active';
                             const isAdmin = member.role === 'admin';
                             const indCosts = member.individualCosts || [];
                             const indTotal = indCosts.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
 
                             return (
-                                <tr key={member.userId} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors">
+                                <tr key={member?.userId || index} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors">
                                     <td className="p-1 font-semibold text-zinc-700 dark:text-zinc-300">{index + 1}</td>
 
                                     <td className="p-1 ">
@@ -116,50 +120,46 @@ export const MemberTable = ({ filteredMembers, isLoading, isAdminMode, handleTog
                                     </td>
 
                                     {/* Joined Date */}
-                                    <td className="whitespace-nowrap p-1 text-zinc-500 font-mono text-[11px]">{member.joinedDate || '2024-01-15'}</td>
+                                    <td className="whitespace-nowrap p-1 text-zinc-500 font-mono text-[11px]">{`${displayFormattedDate(new Date(Number(member?.createdAt)))}`}</td>
 
                                     {/* Actions */}
                                     <td className="p-1 text-right">
-                                        {isAdminMode ? (
-                                            <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                                        <div className="flex items-center justify-end gap-1.5 flex-wrap">
 
-                                                <button
+                                            <button
+                                                type="button"
+                                                onClick={() => setDialogProps({ type: isActive ? 'DEACTIVATE' : 'ACTIVATE', row: member })}
+                                                className={`text-[11px] font-semibold px-2 py-1 rounded border transition-colors cursor-pointer ${isActive
+                                                    ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-800 hover:bg-rose-100'
+                                                    : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100'
+                                                    }`}
+                                            >
+                                                {isActive ? 'Deactivate' : 'Activate'}
+                                            </button>
+
+                                            {/* Edit Button */}
+                                            <div className='flex gap-2'>
+                                                <Button
                                                     type="button"
-                                                    onClick={() => handleToggleUserStatus(member.userId)}
-                                                    className={`text-[11px] font-semibold px-2 py-1 rounded border transition-colors cursor-pointer ${isActive
-                                                        ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-800 hover:bg-rose-100'
-                                                        : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100'
-                                                        }`}
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => setDialogProps({ type: 'COST', row: member })}
+                                                    className="h-6 text-[11px] font-semibold px-2 cursor-pointer border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950"
                                                 >
-                                                    {isActive ? 'Deactivate' : 'Activate'}
-                                                </button>
-
-                                                {/* Edit Button */}
-                                                <div className='flex gap-2'>
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => handleOpenCostModal(member)}
-                                                        className="h-6 text-[11px] font-semibold px-2 cursor-pointer border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950"
-                                                    >
-                                                        <Coins size={11} className="mr-1" /> Fixed Costs
-                                                    </Button>
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => setEditingMember(member)}
-                                                        className="h-6 text-[11px] font-medium px-2 cursor-pointer border-zinc-300 dark:border-zinc-700"
-                                                    >
-                                                        <Pencil size={11} className="mr-1" /> Edit
-                                                    </Button>
-                                                </div>
-
+                                                    <Coins size={11} className="mr-1" /> Fixed Costs
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => setDialogProps({ type: 'UPDATE', row: member })}
+                                                    className="h-6 text-[11px] font-medium px-2 cursor-pointer border-zinc-300 dark:border-zinc-700"
+                                                >
+                                                    <Pencil size={11} className="mr-1" /> Edit
+                                                </Button>
                                             </div>
-                                        ) : (
-                                            <span className="text-[10px] text-zinc-400 italic">Read-Only</span>
-                                        )}
+
+                                        </div>
                                     </td>
                                 </tr>
                             );

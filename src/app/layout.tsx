@@ -8,6 +8,9 @@ import { AppSidebar } from "@/components/ui/app-sidebar";
 import FloatingChatWindow from "@/components/FloatingChatWindow";
 import { AppProvider } from "@/context/AppContext";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 const raleway = Raleway({ subsets: ['latin'], variable: '--font-sans' });
 
 const geistSans = Geist({
@@ -54,6 +57,7 @@ export default async function RootLayout({
               <FloatingChatWindow />
             </SidebarProvider>
             : <div className="min-h-screen bg-background">{children}</div>}
+          <ToastContainer position="bottom-center" />
         </AppProvider>
       </body>
 
