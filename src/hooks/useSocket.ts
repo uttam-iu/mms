@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from "react"
 import { getSocket } from "@/lib/socket";
 
@@ -16,6 +17,10 @@ export function useSocket(type: 'emit' | 'on', event: string, payload: any, cb?:
     isError: false
   })
 
+  // Track previous payload to detect actual changes
+  const prevPayloadRef = React.useRef<string>('');
+  const payloadStr = JSON.stringify(payload);
+
   const makeResponse = React.useCallback(() => {
     if(type === 'emit') {
         setResp((prev) => ({ ...prev, isLoading: true }))
@@ -29,11 +34,15 @@ export function useSocket(type: 'emit' | 'on', event: string, payload: any, cb?:
           cb?.(data)
         })
       }
-  }, []);
+  }, [cb, event, payload, type]);
 
   React.useEffect(() => {
-    makeResponse()
-  }, [makeResponse])
+    // Only call makeResponse if payload actually changed
+    if (payloadStr !== prevPayloadRef.current) {
+      prevPayloadRef.current = payloadStr;
+      makeResponse();
+    }
+  }, [payloadStr, makeResponse])
 
   return {...resp, refetch: makeResponse};
 };

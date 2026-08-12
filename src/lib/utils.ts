@@ -1,12 +1,38 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge";
-import { toast } from 'react-toastify';
+import { toast as toastify, ToastOptions } from 'react-toastify';
 import DOMPurify from 'dompurify';
 import linkifyHtml from 'linkify-html';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+// Toast helper with minimal arguments
+export type ToastType = 'success' | 'error' | 'warning' | 'info';
+
+export type ToastConfig = Omit<ToastOptions, 'type'>;
+
+export const showToast = (
+  message: string,
+  type: ToastType = 'info',
+  options?: ToastConfig
+) => {
+  const defaultOptions: ToastConfig = {
+    position: 'bottom-center',
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+  };
+
+  toastify(message, {
+    ...defaultOptions,
+    ...options,
+    type,
+  });
+};
 
 
 // converting date to yyyy-MM-dd
@@ -86,7 +112,7 @@ export const numberWithCommas = (value:number|string, fractionCount = 0) => {
             minimumFractionDigits: fractionCount,
             maximumFractionDigits: fractionCount,
         });
-    } catch (e) {
+    } catch {
         return value;
     }
 };
@@ -192,7 +218,7 @@ export const getPostdDate = (dateStr:string|Date) => {
     if (date.toString() === 'Invalid Date') return dateStr;
 
     const year = date.getFullYear();
-    let month:number = date.getMonth();
+    const month:number = date.getMonth();
     // if (month < 10) month = `0${month}`;
     let day:number|string = date.getDate();
     if (day < 10) day = `0${day}`;
@@ -201,8 +227,8 @@ export const getPostdDate = (dateStr:string|Date) => {
 };
 
 export const makeToast = (text:string, variant:'success'|'info'|'warning'|'error') => {
-    const toastConfig = {
-        position: 'bottom-center',
+    const toastConfig: ToastConfig = {
+        position: 'bottom-center' as const,
         autoClose: 5000,
         hideProgressBar: false,
         closeOnClick: true,
@@ -212,24 +238,40 @@ export const makeToast = (text:string, variant:'success'|'info'|'warning'|'error
         theme: 'light',
         // transition: Bounce,
     };
-    let toastFn:any = toast;
-    if (variant === 'success') toastFn = toast.success;
-    else if (variant === 'info') toastFn = toast.info;
-    else if (variant === 'warning') toastFn = toast.warn;
-    else if (variant === 'error') toastFn = toast.error;
-    toastFn(text, toastConfig);
+    const toastFnMap = {
+        success: toastify.success,
+        info: toastify.info,
+        warning: toastify.warning,
+        error: toastify.error,
+    };
+    toastFnMap[variant](text, toastConfig);
 };
 
-export const apiToast = (res:any) => {
+interface ApiResponse {
+    success?: boolean;
+    message?: string | { message: string };
+}
+
+export const apiToast = (res: ApiResponse) => {
     let message = '';
     const variant = res?.success ? 'success' : 'error';
     if (typeof res?.message === 'string') message = res?.message;
-    else message = res?.message?.message;
-
+    else if (res?.message && typeof res.message === 'object' && 'message' in res.message) {
+        message = res.message.message;
+    }
     makeToast(message, variant);
 };
 
-export const apiErrorToast = (res:any) => {
+interface ApiErrorResponse {
+    response?: {
+        data?: {
+            message?: string;
+        };
+    };
+    message?: string;
+}
+
+export const apiErrorToast = (res: ApiErrorResponse) => {
     let message = '';
     if (res?.response?.data?.message) message = res?.response?.data?.message;
     else if (typeof res?.message === 'string') message = res?.message;

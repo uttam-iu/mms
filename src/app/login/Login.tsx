@@ -11,20 +11,17 @@ import Image from "next/image";
 import logoIcon from '../../../public/logo-white.png';
 import { useAppState } from '@/context/AppContext';
 import { setJwtToken } from "@/lib/localStorageHelper";
+import { showToast } from "@/lib/utils";
 import axios from "axios";
 
 export function LoginForm() {
   const ctx = useAppState();
 
   const [showPassword, setShowPassword] = React.useState<boolean>(false);
-  const [loginError, setLoginError] = React.useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = React.useState<string>('');
   const [loading, setLoading] = React.useState<boolean>(false);
 
   const onLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
-    setLoginError(false);
-    setErrorMessage('');
 
     const target = e.currentTarget?.elements as typeof e.currentTarget.elements & {
       userName: { value: string };
@@ -42,7 +39,6 @@ export function LoginForm() {
         withCredentials: true,
       })
       .then((res) => {
-        // console.log(res)
         setLoading(false);
         if (res?.data?.success) {
           ctx?.setUser(res?.data?.data?.user)
@@ -50,15 +46,16 @@ export function LoginForm() {
           document.cookie = `auth_token=${res?.data?.data?.token}; path=/`;
           document.cookie = `user=${res?.data?.data?.user?.userId}; path=/`;
           document.cookie = 'max-age=86400; SameSite=Strict; path=/';
+          showToast('Login successful!', 'success');
           window.location.reload()
         } else {
-          setLoginError(true);
-          setErrorMessage(res?.data?.message || 'Login failed.');
+          showToast(res?.data?.message || 'Login failed.', 'error');
           console.log(res?.data?.message);
         }
       })
       .catch((err) => {
         setLoading(false);
+        showToast('An error occurred during login.', 'error');
         console.log('login-err', err);
       });
   };
@@ -103,7 +100,6 @@ export function LoginForm() {
                 </button>
               </div>
             </div>
-            {loginError && <div className="text-red-500 text-xs font-semibold">**{errorMessage || 'Username or password mismatch.'}</div>}
             <div className="flex justify-center">
               <Button
                 className="text-teal-500 font-bold cursor-pointer flex items-center gap-2"

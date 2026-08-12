@@ -3,18 +3,30 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { displayFormattedDate } from "@/lib/utils"
 import { USER_TYPE } from "@/types/user.types"
-import { CheckCircle2, Coins, Pencil, Users, XCircle } from "lucide-react"
+import { CheckCircle2, Coins, Pencil, UserPlus, Users, XCircle } from "lucide-react"
 
 export const MemberTable = ({ memberList, isLoading, setDialogProps }: { memberList: USER_TYPE[], isLoading: boolean, setDialogProps: (dialogProps: { type: 'ADD' | 'UPDATE' | 'DELETE' | 'COST' | 'ACTIVATE' | 'DEACTIVATE', row?: USER_TYPE | null }) => void }) => {
 
     return <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs overflow-hidden">
         <div className="p-2 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                House Members Table
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
-                    {memberList?.length} Total Shown
-                </span>
-            </h3>
+            <div>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    House Members Table
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+                        {memberList?.length} Total Shown
+                    </span>
+                </h3>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap w-auto">
+                <Button
+                    onClick={() => setDialogProps({ type: 'ADD', row: null })}
+                    size="sm"
+                    className="h-8 text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white cursor-pointer shadow-xs flex items-center gap-1.5 rounded-lg"
+                >
+                    <UserPlus size={14} /> Add New Member
+                </Button>
+
+            </div>
         </div>
 
         {memberList?.length === 0 || isLoading ? (
