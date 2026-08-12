@@ -21,7 +21,7 @@ export const AddFixedCostDialog = ({ handleSaveCostsSubmit, memberCosts, setMemb
         ]);
     };
 
-    const handleUpdateCostRow = (index: number, field: 'costType' | 'amount', value: any) => {
+    const handleUpdateCostRow = (index: number, field: 'costType' | 'amount', value: string | number) => {
         setMemberCosts((prev) =>
             prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
         );

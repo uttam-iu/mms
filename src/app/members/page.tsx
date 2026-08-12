@@ -13,7 +13,8 @@ import { useSearchParams } from 'next/navigation';
 export default function MembersPage() {
   const searchParams = useSearchParams();
 
-  const { data: memberListResp, isLoading, refetch } = useSocket('emit', 'get_members', {
+
+  const { data: memberListResp, isLoading, refetch } = useSocket<{ data: USER_TYPE[] }>('emit', 'get_members', {
     searchText: searchParams.get('search') || '',
     status: searchParams.get('status') || '',
   });

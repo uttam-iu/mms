@@ -15,8 +15,9 @@ import {
 import React from 'react';
 import { getSocket } from '@/lib/socket';
 import { showToast } from '@/lib/utils';
+import { USER_TYPE, ApiResponse } from '@/types/user.types';
 
-export default function UpdateProfileDialog({ profileData, isEditProfileOpen, onCancel, refetch }: { profileData: any, isEditProfileOpen: boolean, onCancel: () => void, refetch: () => void }) {
+export default function UpdateProfileDialog({ profileData, isEditProfileOpen, onCancel, refetch }: { profileData: USER_TYPE, isEditProfileOpen: boolean, onCancel: () => void, refetch: () => void }) {
     const [formData, setFormData] = React.useState({
         fullName: profileData?.fullName,
         userName: profileData?.userName,
@@ -28,7 +29,7 @@ export default function UpdateProfileDialog({ profileData, isEditProfileOpen, on
         e.preventDefault();
         setLoading(true)
         const socket = getSocket()
-        socket?.emit('profile_update', formData, (res: any) => {
+        socket?.emit('profile_update', formData, (res: ApiResponse<USER_TYPE>) => {
             if (res?.success) {
                 showToast(res?.message, 'success')
                 setLoading(false)

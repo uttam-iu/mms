@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
@@ -57,7 +56,7 @@ export default function MonthDetailPage() {
     const [isAddDepositOpen, setIsAddDepositOpen] = useState(false);
 
 
-    const handleAddBazarSubmit = (e: React.FormEvent, newBazar: any) => {
+    const handleAddBazarSubmit = (e: React.FormEvent, newBazar: { itemsDescription: string; amount: string | number; shopperUserId: string | number; category: 'Groceries' | 'Vegetables' | 'Meat & Fish' | 'Spices & Cooking' | 'Others' }) => {
         e.preventDefault();
         if (!newBazar.itemsDescription || !newBazar.amount) return;
 
@@ -117,11 +116,11 @@ export default function MonthDetailPage() {
     };
 
     // Handle Quick Add Deposit
-    const handleAddDepositSubmit = (e: React.FormEvent, newDeposit: any) => {
+    const handleAddDepositSubmit = (e: React.FormEvent, newDeposit: { amount: string | number; userId: string | number; paymentMethod?: 'bKash' | 'Nagad' | 'Cash' | 'Bank Transfer'; note?: string }) => {
         e.preventDefault();
         if (!newDeposit.amount) return;
 
-        const amountNum = parseFloat(newDeposit.amount);
+        const amountNum = typeof newDeposit.amount === 'string' ? parseFloat(newDeposit.amount) : newDeposit.amount;
         if (isNaN(amountNum) || amountNum <= 0) return;
 
         const member = mealData.activeMembers.find((m) => m.userId === Number(newDeposit.userId));
@@ -132,7 +131,7 @@ export default function MonthDetailPage() {
             userId: Number(newDeposit.userId),
             userName: member?.fullName || 'User',
             amount: amountNum,
-            paymentMethod: newDeposit.paymentMethod,
+            paymentMethod: newDeposit.paymentMethod || 'Cash',
             note: newDeposit.note || 'Manual Deposit',
         };
 

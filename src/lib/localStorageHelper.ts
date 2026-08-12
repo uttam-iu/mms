@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 const MY_ACCOUNT = 'my-account';
 const RECEIVER_ACCOUNT = 'receiver-account';
@@ -16,14 +15,14 @@ const removeDataFromLocalStorage = (name:string) => {
     localStorage.removeItem(name);
 };
 
-const getMyAccount = () => {
-    const account:any = localStorage?.getItem(MY_ACCOUNT)
-        ? JSON.parse(localStorage?.getItem(MY_ACCOUNT)||'')
+const getMyAccount = (): Record<string, unknown> | null => {
+    const account = localStorage?.getItem(MY_ACCOUNT)
+        ? JSON.parse(localStorage?.getItem(MY_ACCOUNT) || '')
         : null;
     return account;
 };
 
-const setMyAccount = (accData:any) => {
+const setMyAccount = (accData: Record<string, unknown>) => {
     localStorage.setItem(MY_ACCOUNT, JSON.stringify(accData));
 };
 const getReceiverAccount = () => {
@@ -33,7 +32,7 @@ const getReceiverAccount = () => {
     return account;
 };
 
-const setReceiverAccount = (accData:any) => {
+const setReceiverAccount = (accData: Record<string, unknown>) => {
     localStorage.setItem(RECEIVER_ACCOUNT, JSON.stringify(accData));
 };
 

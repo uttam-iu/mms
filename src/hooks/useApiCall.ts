@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as React from "react"
 import axios from "axios"
 import { getJwtToken } from "@/lib/localStorageHelper"
 
 type ApiMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
-const buildRequestKey = (endpoint: string, method: ApiMethod, params: Record<string, any>) => {
+const buildRequestKey = (endpoint: string, method: ApiMethod, params: Record<string, unknown>): string => {
   let paramsKey = ''
   try {
     paramsKey = JSON.stringify(params ?? {})
@@ -15,10 +14,14 @@ const buildRequestKey = (endpoint: string, method: ApiMethod, params: Record<str
   return `${endpoint}|${method}|${paramsKey}`
 }
 
-export function useApiCall(endpoint = '', method: ApiMethod = 'GET', params: Record<string, any> = {}) {
+export function useApiCall<T = unknown>(
+  endpoint = '',
+  method: ApiMethod = 'GET',
+  params: Record<string, unknown> = {}
+) {
   const [isLoading, setIsLoading] = React.useState<boolean>(true)
-  const [resp, setResp] = React.useState<any>(null)
-  const [error, setError] = React.useState<any>(null)
+  const [resp, setResp] = React.useState<T | null>(null)
+  const [error, setError] = React.useState<Error | null>(null)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/use-memo
   const serializedParams = React.useMemo(() => JSON.stringify(params ?? {}), [JSON.stringify(params ?? {})])
@@ -32,13 +35,13 @@ export function useApiCall(endpoint = '', method: ApiMethod = 'GET', params: Rec
   }, [serializedParams])
 
   const requestKey = React.useMemo(
-    () => buildRequestKey(endpoint, method, stableParams),
+    () => buildRequestKey(endpoint, method, stableParams as Record<string, unknown>),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [endpoint, method, serializedParams]
   )
 
-  const cacheRef = React.useRef<{ key: string; data: any } | null>(null)
-  const fetchRef = React.useRef<((force?: boolean) => Promise<any>) | null>(null)
+  const cacheRef = React.useRef<{ key: string; data: T } | null>(null)
+  const fetchRef = React.useRef<((force?: boolean) => Promise<T>) | null>(null)
 
   const fetchData = React.useCallback(
     async (force = false) => {
@@ -77,9 +80,10 @@ export function useApiCall(endpoint = '', method: ApiMethod = 'GET', params: Rec
         setResp(response.data)
         return response.data
       } catch (fetchError) {
+        const error = fetchError instanceof Error ? fetchError : new Error(String(fetchError))
         setResp(null)
-        setError(fetchError)
-        throw fetchError
+        setError(error)
+        throw error
       } finally {
         setIsLoading(false)
       }

@@ -2,9 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Pencil, ShieldCheck, User } from "lucide-react";
 import React from "react";
 import { displayFormattedDate } from "@/lib/utils";
+import { USER_TYPE } from "@/types/user.types";
 import UpdateProfileDialog from "./UpdateProfileDialog";
 
-export default function PersonalInfo({ profileData, refetch }: { profileData: any, refetch: () => void }) {
+export default function PersonalInfo({ profileData, refetch }: { profileData: USER_TYPE, refetch: () => void }) {
     const [isEditProfileOpen, setIsEditProfileOpen] = React.useState(false);
 
     return <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 p-6 shadow-2xs space-y-6">
@@ -61,7 +62,7 @@ export default function PersonalInfo({ profileData, refetch }: { profileData: an
             <div className="space-y-1">
                 <span className="text-zinc-400 font-semibold uppercase text-[10px] tracking-wider">Joined Date</span>
                 <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 font-mono font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
-                    <Calendar size={14} className="text-zinc-400" /> {`${displayFormattedDate(profileData?.createdAt)}`}
+                    <Calendar size={14} className="text-zinc-400" /> {profileData?.createdAt ? String(displayFormattedDate(profileData.createdAt)) : 'N/A'}
                 </div>
             </div>
 

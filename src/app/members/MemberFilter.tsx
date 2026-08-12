@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Filter, Search } from "lucide-react";
@@ -14,14 +13,14 @@ export const MemberFilter = () => {
 
     const [searchInput, setSearchInput] = React.useState('');
     const [statusSelect, setStatusSelect] = React.useState<'all' | 'active' | 'inactive'>(
-        ['all', 'active', 'inactive'].includes(paramStatus) ? (paramStatus as any) : 'all'
+        ['all', 'active', 'inactive'].includes(paramStatus) ? (paramStatus as 'all' | 'active' | 'inactive') : 'all'
     );
 
     React.useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setSearchInput(paramSearch);
         if (['all', 'active', 'inactive'].includes(paramStatus)) {
-            setStatusSelect(paramStatus as any);
+            setStatusSelect(paramStatus as 'all' | 'active' | 'inactive');
         }
     }, [paramSearch, paramStatus]);
 
@@ -53,7 +52,7 @@ export const MemberFilter = () => {
             <div className="flex items-center gap-1.5">
                 <select
                     value={statusSelect}
-                    onChange={(e) => setStatusSelect(e.target.value as any)}
+                    onChange={(e) => setStatusSelect(e.target.value as 'all' | 'active' | 'inactive')}
                     className="h-9 text-xs font-semibold rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 px-3 text-zinc-800 dark:text-zinc-200 focus:outline-hidden focus:ring-2 focus:ring-teal-500 cursor-pointer"
                 >
                     <option value="all">All Status</option>

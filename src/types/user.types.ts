@@ -16,4 +16,12 @@ export interface USER_TYPE {
   createdAt?: string;
   updatedAt?: string;
   individualCosts?: IndividualCostItem[];
+  emergencyContact?: string;
+  address?: string;
+}
+
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  message: string;
 }

@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Pencil, UserPlus, Loader2 } from 'lucide-react';
-import { USER_TYPE } from '@/types/user.types';
+import { USER_TYPE, ApiResponse } from '@/types/user.types';
 import React from 'react';
 import { getSocket } from '@/lib/socket';
 import { showToast } from '@/lib/utils';
@@ -19,21 +19,9 @@ export const EditMemberDialog = ({ row, type, onCancel, refetch }: { row: USER_T
         fullName: row?.fullName || '',
         userName: row?.userName || '',
         phone: row?.phone || '',
-        role: row?.role || 'member',
-        status: row?.status || 'active',
+        role: (row?.role || 'member') as 'admin' | 'member',
+        status: (row?.status || 'active') as 'active' | 'inactive',
     })
-
-    React.useEffect(() => {
-        if (row) {
-            setFormData({
-                fullName: row.fullName || '',
-                userName: row.userName || '',
-                phone: row.phone || '',
-                role: row.role || 'member',
-                status: row.status || 'active',
-            })
-        }
-    }, [row])
 
     const handleSubmit = (e: React.FormEvent) => {
         e?.preventDefault();
@@ -44,7 +32,7 @@ export const EditMemberDialog = ({ row, type, onCancel, refetch }: { row: USER_T
         if (type === 'ADD') payload.password = formData?.phone
         const socket = getSocket()
         setLoading(true)
-        socket?.emit(type === 'UPDATE' ? 'member_update' : 'member_create', payload, (res: any) => {
+        socket?.emit(type === 'UPDATE' ? 'member_update' : 'member_create', payload, (res: ApiResponse<USER_TYPE>) => {
             if (res?.success) {
                 showToast(res?.message, 'success')
                 setLoading(false)
@@ -103,7 +91,7 @@ export const EditMemberDialog = ({ row, type, onCancel, refetch }: { row: USER_T
                             <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Role</label>
                             <select
                                 value={formData?.role}
-                                onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                                onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'member' })}
                                 className="w-full h-8 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 text-xs"
                             >
                                 <option value="member">Member</option>
@@ -115,7 +103,7 @@ export const EditMemberDialog = ({ row, type, onCancel, refetch }: { row: USER_T
                             <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Status</label>
                             <select
                                 value={formData?.status}
-                                onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                                onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })}
                                 className="w-full h-8 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 text-xs"
                             >
                                 <option value="active">Active</option>

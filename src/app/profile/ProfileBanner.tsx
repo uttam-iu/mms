@@ -1,8 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Mail, Phone, ShieldCheck, Sparkles } from "lucide-react";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function ProfileBanner({ profileData }: { profileData: any }) {
+import { USER_TYPE } from '@/types/user.types';
+
+export default function ProfileBanner({ profileData }: { profileData: USER_TYPE }) {
     return (<div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs overflow-hidden">
         {/* Decorative Cover Gradient */}
         <div className="h-36 bg-gradient-to-r from-teal-700 via-teal-600 to-teal-900 relative">
@@ -16,7 +17,7 @@ export default function ProfileBanner({ profileData }: { profileData: any }) {
                 {/* Profile Avatar with Edit Badge */}
                 <div className="relative group">
                     <Avatar className="h-24 w-24 ring-4 ring-white dark:ring-zinc-900 shadow-md">
-                        <AvatarImage src={profileData?.photoUrl} alt={profileData?.fullName} />
+                        <AvatarImage src={profileData?.photoUrl || undefined} alt={profileData?.fullName} />
                         <AvatarFallback className="text-2xl font-bold bg-teal-800 text-white">
                             {profileData?.fullName?.[0]}
                         </AvatarFallback>

@@ -4,7 +4,7 @@ import { getSocket } from "@/lib/socket";
 import { AlertCircle, CheckCircle2, Lock, Loader2 } from "lucide-react";
 import React from "react";
 
-export default function PasswordChange({ refetch }: { refetch: () => void }) {
+export default function PasswordChange() {
     const [loading, setLoading] = React.useState(false)
     const [passwordState, setPasswordState] = React.useState({
         currentPassword: '',
@@ -35,7 +35,7 @@ export default function PasswordChange({ refetch }: { refetch: () => void }) {
         socket?.emit('password_change', {
             currentPassword: passwordState?.currentPassword,
             newPassword: passwordState?.newPassword,
-        }, (res: any) => {
+        }, (res: { success: boolean; message: string }) => {
             if (res?.success) {
                 setLoading(false)
                 setPasswordAlert({ type: 'success', message: 'Password updated' });
