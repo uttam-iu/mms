@@ -39,7 +39,7 @@ export default function ProfileBanner({ profileData }: { profileData: any }) {
                                 {profileData?.fullName}
                             </div>
                             <div className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
-                                <ShieldCheck size={11} /> {profileData?.role === 'admin' ? 'House Manager (Admin)' : 'Member'}
+                                <ShieldCheck size={11} /> {profileData?.role === 'admin' ? 'Admin' : 'Member'}
                             </div>
                         </div>
                     </h1>

@@ -7,13 +7,14 @@ import {
     DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Pencil, UserPlus } from 'lucide-react';
+import { Pencil, UserPlus, Loader2 } from 'lucide-react';
 import { USER_TYPE } from '@/types/user.types';
 import React from 'react';
 import { getSocket } from '@/lib/socket';
+import { showToast } from '@/lib/utils';
 
 export const EditMemberDialog = ({ row, type, onCancel, refetch }: { row: USER_TYPE | null, type: string, onCancel: () => void, refetch: () => void }) => {
-
+    const [loading, setLoading] = React.useState(false)
     const [formData, setFormData] = React.useState({
         fullName: row?.fullName || '',
         userName: row?.userName || '',
@@ -42,12 +43,16 @@ export const EditMemberDialog = ({ row, type, onCancel, refetch }: { row: USER_T
         }
         if (type === 'ADD') payload.password = formData?.phone
         const socket = getSocket()
+        setLoading(true)
         socket?.emit(type === 'UPDATE' ? 'member_update' : 'member_create', payload, (res: any) => {
             if (res?.success) {
+                showToast(res?.message, 'success')
+                setLoading(false)
                 refetch()
                 onCancel()
             } else {
-                console.log(res)
+                showToast(res?.message, 'error')
+                setLoading(false)
             }
         })
     }
@@ -121,11 +126,12 @@ export const EditMemberDialog = ({ row, type, onCancel, refetch }: { row: USER_T
                 </div>
 
                 <DialogFooter>
-                    <Button type="button" variant="outline" size="sm" onClick={onCancel}>
+                    <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={loading}>
                         Cancel
                     </Button>
-                    <Button type="submit" size="sm" className="bg-teal-700 hover:bg-teal-800 text-white">
-                        {type === 'UPDATE' ? 'Update Member' : 'Add Member'}
+                    <Button type="submit" size="sm" disabled={loading} className="bg-teal-700 hover:bg-teal-800 text-white disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
+                        {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                        {loading ? 'Processing...' : (type === 'UPDATE' ? 'Update Member' : 'Add Member')}
                     </Button>
                 </DialogFooter>
             </form>

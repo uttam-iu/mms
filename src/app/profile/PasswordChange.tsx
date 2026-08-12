@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertCircle, CheckCircle2, Lock } from "lucide-react";
+import { getSocket } from "@/lib/socket";
+import { AlertCircle, CheckCircle2, Lock, Loader2 } from "lucide-react";
 import React from "react";
 
-export default function PasswordChange() {
+export default function PasswordChange({ refetch }: { refetch: () => void }) {
+    const [loading, setLoading] = React.useState(false)
     const [passwordState, setPasswordState] = React.useState({
         currentPassword: '',
         newPassword: '',
@@ -28,8 +30,20 @@ export default function PasswordChange() {
             return;
         }
 
-        setPasswordAlert({ type: 'success', message: 'Your password has been updated successfully!' });
-        setPasswordState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        const socket = getSocket()
+        setLoading(true)
+        socket?.emit('password_change', {
+            currentPassword: passwordState?.currentPassword,
+            newPassword: passwordState?.newPassword,
+        }, (res: any) => {
+            if (res?.success) {
+                setLoading(false)
+                setPasswordAlert({ type: 'success', message: 'Password updated' });
+            } else {
+                setLoading(false)
+                setPasswordAlert({ type: 'error', message: res?.message });
+            }
+        })
     };
 
     return <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 p-6 shadow-2xs space-y-6">
@@ -91,8 +105,9 @@ export default function PasswordChange() {
                 />
             </div>
 
-            <Button type="submit" size="sm" className="bg-teal-700 hover:bg-teal-800 text-white font-semibold cursor-pointer">
-                Update Password
+            <Button type="submit" size="sm" disabled={loading} className="bg-teal-700 hover:bg-teal-800 text-white font-semibold cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {loading ? 'Updating...' : 'Update Password'}
             </Button>
         </form>
     </div>
