@@ -9,7 +9,7 @@ export const BazarwiseExpenseSummaryTable = ({ mealData, setIsAddBazarOpen }: { 
         <div className="p-4 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between flex-wrap gap-2">
             <div>
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                    Bazar Expenses Log ({mealData.monthName} {mealData.year})
+                    Bazar Expenses Log
                 </h3>
                 <p className="text-xs text-zinc-500">
                     Detailed breakdown of all shopping items bought by active house members.

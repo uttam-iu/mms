@@ -9,36 +9,22 @@ import { useRouter, useSearchParams } from "next/navigation";
 export const MonthFilter = () => {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const [filterData, setFilterData] = React.useState({
+        year: '',
+        month: ''
+    })
 
+    React.useEffect(() => {
+        setFilterData({
+            year: searchParams.get('year') || new Date().getFullYear()?.toString(),
+            month: searchParams.get('month') || MONTH_LIST[new Date().getMonth()]?.value
+        })
+    }, [searchParams]);
 
-    // Search parameters or default
-    const paramYear = searchParams.get('year');
-    const paramMonth = searchParams.get('month');
-
-    // Filter local state
-    const [selectedYear, setSelectedYear] = React.useState<string>(
-        paramYear ? paramYear : '2026'
-    );
-    const [selectedMonth, setSelectedMonth] = React.useState<string>(
-        paramMonth || 'january'
-    );
-
-    // Sync state if URL changes
-    // React.useEffect(() => {
-    //     if (paramYear)
-    //         setSelectedYear(paramYear);
-
-    //     if (paramMonth)
-    //         setSelectedMonth(paramMonth);
-
-    // }, [paramYear, paramMonth]);
-
-
-    // Handle Filter Perform Action
     const handleApplyFilter = () => {
         const query = new URLSearchParams({
-            year: selectedYear.toString(),
-            month: selectedMonth.toLowerCase(),
+            year: filterData.year.toString(),
+            month: filterData.month.toLowerCase(),
         }).toString();
 
         router.push(`/months?${query}`);
@@ -46,14 +32,13 @@ export const MonthFilter = () => {
 
     return (
         <div className="flex items-center gap-2.5 flex-wrap w-full md:w-auto ">
-            {/* Mandatory Year Dropdown */}
             <div className="flex items-center gap-1.5">
                 <select
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
+                    value={filterData.year}
+                    onChange={(e) => setFilterData({ ...filterData, year: e.target.value })}
                     className="h-8 text-xs font-semibold rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-2 text-zinc-800 dark:text-zinc-200 focus:outline-hidden focus:ring-2 focus:ring-teal-500 cursor-pointer"
                 >
-                    {AVAILABLE_YEARS.map((yr) => (
+                    {AVAILABLE_YEARS?.map((yr) => (
                         <option key={yr} value={yr}>
                             {yr}
                         </option>
@@ -61,11 +46,10 @@ export const MonthFilter = () => {
                 </select>
             </div>
 
-            {/* Mandatory Month Dropdown */}
             <div className="flex items-center gap-1.5">
                 <select
-                    value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    value={filterData.month}
+                    onChange={(e) => setFilterData({ ...filterData, month: e.target.value })}
                     className="h-8 text-xs font-semibold rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-2 text-zinc-800 dark:text-zinc-200 focus:outline-hidden focus:ring-2 focus:ring-teal-500 cursor-pointer"
                 >
                     {MONTH_LIST.map((m) => (
@@ -76,7 +60,6 @@ export const MonthFilter = () => {
                 </select>
             </div>
 
-            {/* Filter Perform Button */}
             <Button
                 onClick={handleApplyFilter}
                 size="sm"

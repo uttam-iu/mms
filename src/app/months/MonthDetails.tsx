@@ -168,7 +168,13 @@ export default function MonthDetailPage() {
         setIsAddDepositOpen(false);
     };
 
-    useTitle('Monthly Summary');
+    const getTitle = React.useCallback(() => {
+        const month = searchParams?.get('month') || ''
+        const year = searchParams?.get('year') || ''
+        return `Monthly Summary (${month.charAt(0).toUpperCase() + month.slice(1)} ${year})`
+    }, [searchParams])
+
+    useTitle(getTitle());
 
     return (
         <div className="min-h-screen w-full min-w-0 bg-zinc-50/60 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans pb-12">
@@ -180,7 +186,7 @@ export default function MonthDetailPage() {
 
             <div className="max-w-7xl mx-auto px-4 pt-6 space-y-6 w-full min-w-0">
                 <div>
-                    <div className="flex items-center justify-between mb-3">
+                    {/* <div className="flex items-center justify-between mb-3">
                         <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
                             <Sparkles size={14} className="text-amber-500" /> Monthly Summary
                         </h2>
@@ -202,7 +208,7 @@ export default function MonthDetailPage() {
                                 <Plus size={13} className="mr-1" /> Record Deposit
                             </Button>
                         </div>
-                    </div>
+                    </div> */}
 
                     <SummaryCard mealData={mealData} setActiveCardDialog={setActiveCardDialog} />
                 </div>
@@ -222,11 +228,10 @@ export default function MonthDetailPage() {
                         <BazarwiseExpenseSummaryTable mealData={mealData} setIsAddBazarOpen={setIsAddBazarOpen} />
                     )}
 
-                    {activeTab === 'deposits' && (
+                    {/* {activeTab === 'deposits' && (
                         <MemberDepositLogTable mealData={mealData} setIsAddDepositOpen={setIsAddDepositOpen} />
-                    )}
+                    )} */}
 
-                    {/* TAB 5: FIXED UTILITIES & EXTRA EXPENSES TABLE */}
                     {activeTab === 'extra' && (
                         <ExtraExpenseTable mealData={mealData} />
                     )}
@@ -238,7 +243,7 @@ export default function MonthDetailPage() {
             <CuttentMealRateDialog mealData={mealData} isOpen={activeCardDialog === 'mealRate'} onCancel={() => setActiveCardDialog(null)} />
             <TotalExtraCostDialog mealData={mealData} isOpen={activeCardDialog === 'totalExtra'} onCancel={() => setActiveCardDialog(null)} />
             <BazarCostDialog mealData={mealData} isOpen={activeCardDialog === 'bazarCost'} onCancel={() => setActiveCardDialog(null)} />
-            <DepositDialog mealData={mealData} isOpen={activeCardDialog === 'deposits'} onCancel={() => setActiveCardDialog(null)} />
+            {/* <DepositDialog mealData={mealData} isOpen={activeCardDialog === 'deposits'} onCancel={() => setActiveCardDialog(null)} /> */}
             <NetBalanceDialog mealData={mealData} isOpen={activeCardDialog === 'netBalance'} onCancel={() => setActiveCardDialog(null)} />
             <AddBazarExpenceDialog isAddBazarOpen={isAddBazarOpen} setIsAddBazarOpen={setIsAddBazarOpen} mealData={mealData} handleAddBazarSubmit={handleAddBazarSubmit} />
             <DepositRecordDialog isAddDepositOpen={isAddDepositOpen} setIsAddDepositOpen={setIsAddDepositOpen} mealData={mealData} handleAddDepositSubmit={handleAddDepositSubmit} />

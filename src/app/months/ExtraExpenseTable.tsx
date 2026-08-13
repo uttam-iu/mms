@@ -6,10 +6,10 @@ export const ExtraExpenseTable = ({ mealData }: { mealData: MonthlyMealData }) =
         <div className="p-4 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
             <div>
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                    Fixed Extra & Utility Bills ({mealData.monthName} {mealData.year})
+                    Fixed Extra & Utility Bills
                 </h3>
                 <p className="text-xs text-zinc-500">
-                    Shared house expenses (cook salary, gas bill, internet, cleaning) equally divided among {mealData.activeMembers.length} members.
+                    Shared house expenses.
                 </p>
             </div>
         </div>

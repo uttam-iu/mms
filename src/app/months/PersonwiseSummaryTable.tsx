@@ -7,10 +7,10 @@ export const PersonwiseSummaryTable = ({ mealData }: { mealData: MonthlyMealData
         <div className="p-4 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
             <div>
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                    Person-Wise Meal & Financial Summary ({mealData.monthName} {mealData.year})
+                    Person-Wise Meal & Financial Summary
                 </h3>
                 <p className="text-xs text-zinc-500">
-                    Individual meal counts, calculated meal costs (Meals &times; ৳{mealData.mealRate}), extra shared cost, total deposit, and net balance.
+                    Individual meal counts & costs.
                 </p>
             </div>
         </div>

@@ -20,10 +20,10 @@ export const SummaryTabs = ({ setActiveTab, mealData, activeTab }: { setActiveTa
             key: 'bazar',
             label: <div className="flex items-center gap-1.5"><ShoppingBag size={14} /> Bazar Expenses ({mealData.bazarExpenses.length})</div>,
         },
-        {
-            key: 'deposits',
-            label: <div className="flex items-center gap-1.5"><PiggyBank size={14} /> Deposits Log ({mealData.deposits.length})</div>,
-        },
+        // {
+        //     key: 'deposits',
+        //     label: <div className="flex items-center gap-1.5"><PiggyBank size={14} /> Deposits Log ({mealData.deposits.length})</div>,
+        // },
         {
             key: 'extra',
             label: <div className="flex items-center gap-1.5"><Receipt size={14} /> Fixed Utilities ({mealData.extraExpenses.length})</div>,

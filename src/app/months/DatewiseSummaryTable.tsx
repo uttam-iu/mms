@@ -6,10 +6,10 @@ export const DatewiseSummaryTable = ({ mealData }: { mealData: MonthlyMealData }
         <div className="p-4 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
             <div>
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                    Date-Wise Meal Matrix ({mealData.monthName} 1 to {mealData.daysInMonth}, {mealData.year})
+                    Date-Wise Meal Matrix
                 </h3>
                 <p className="text-xs text-zinc-500">
-                    Daily recorded meals per member (B = Breakfast 0.5, L = Lunch 1.0, D = Dinner 1.0).
+                    Daily recorded meals per member.
                 </p>
             </div>
         </div>

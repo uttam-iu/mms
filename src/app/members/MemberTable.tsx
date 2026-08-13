@@ -25,7 +25,6 @@ export const MemberTable = ({ memberList, isLoading, setDialogProps }: { memberL
                 >
                     <UserPlus size={14} /> Add New Member
                 </Button>
-
             </div>
         </div>
 
