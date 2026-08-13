@@ -30,7 +30,7 @@ export const MemberTable = ({ memberList, isLoading, setDialogProps }: { memberL
 
         {memberList?.length === 0 || isLoading ? (
             <div className="p-12 text-center text-xs text-zinc-400 space-y-2">
-                {isLoading ? <div className="flex justify-center items-center"><Loader /></div> : <>
+                {isLoading ? <Loader /> : <>
                     <Users size={32} className="mx-auto text-zinc-400" />
                     <p className="font-semibold">No member records match the applied filter.</p>
                     <p>Try modifying your search or status selection and click Perform Filter.</p>

@@ -15,7 +15,7 @@ export const ExtraExpenseTable = ({
 }) => {
     return (
         <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs overflow-hidden">
-            <div className="p-4 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between flex-wrap gap-2">
+            <div className="p-2 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between flex-wrap gap-2">
                 <div>
                     <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                         Fixed Extra & Utility Bills
@@ -28,7 +28,7 @@ export const ExtraExpenseTable = ({
                     <Button
                         onClick={() => setIsAddExtraOpen(true)}
                         size="sm"
-                        className="h-8 text-xs font-semibold bg-purple-700 hover:bg-purple-800 text-white cursor-pointer"
+                        className="h-8 text-xs font-semibold bg-teal-700 hover:bg-teal-800 text-white cursor-pointer"
                     >
                         <Plus size={14} className="mr-1" /> Add Fixed Utility
                     </Button>

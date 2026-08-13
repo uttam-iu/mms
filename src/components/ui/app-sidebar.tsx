@@ -5,7 +5,14 @@ import * as React from 'react';
 import {
   Users,
   User,
+  Calendar,
+  ShoppingBag,
+  Receipt,
   icons,
+  Summary,
+  Utensils,
+  Handbag,
+  Settings,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -47,7 +54,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     socket.connect()
   }, []);
 
-  const { isLoading, resp } = useApiCall<{ data: MONTH_META[] }>('menus', 'GET', {});
+  // const { isLoading, resp } = useApiCall<{ data: MONTH_META[] }>('menus', 'GET', {});
 
   return (
     <Sidebar collapsible="icon" className="border-r border-zinc-200 dark:border-zinc-800" {...props}>
@@ -73,29 +80,117 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         <SidebarGroup>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                tooltip="My Profile"
-                isActive={pathname === '/profile'}
-                render={<Link href="/profile" />}
-              >
-                <User className="size-4 text-teal-600 dark:text-teal-400 shrink-0" />
-                <span className="truncate text-xs font-bold text-zinc-800 dark:text-zinc-200">My Profile</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                tooltip="Members Management"
-                isActive={pathname === '/members' || pathname?.startsWith('/members?')}
-                render={<Link href="/members" />}
-              >
-                <Users className="size-4 text-teal-600 dark:text-teal-400 shrink-0" />
-                <span className="truncate text-xs font-bold text-zinc-800 dark:text-zinc-200">House Members</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {[
+              {
+                tooltip: 'My Profile',
+                label: 'My Profile',
+                href: '/profile',
+                icon: User,
+                isActive: pathname === '/profile',
+              },
+              {
+                tooltip: 'Summary',
+                label: 'Summary',
+                href: '/summary',
+                icon: Summary,
+                isActive: pathname === '/summary' || pathname?.startsWith('/summary?'),
+              },
+              {
+                tooltip: 'Meal Matrix',
+                label: 'Meal Matrix',
+                href: '/meal-matrix',
+                icon: Utensils,
+                isActive: pathname === '/meal-matrix' || pathname?.startsWith('/meal-matrix?'),
+              },
+              {
+                tooltip: 'Bazar Expenses',
+                label: 'Bazar Expenses',
+                href: '/bazar-expenses',
+                icon: Handbag,
+                isActive: pathname === '/bazar-expenses' || pathname?.startsWith('/bazar-expenses?'),
+              },
+              {
+                tooltip: 'Fixed Utilities',
+                label: 'Fixed Utilities',
+                href: '/fixed-utilities',
+                icon: Settings,
+                isActive: pathname === '/fixed-utilities' || pathname?.startsWith('/fixed-utilities?'),
+              },
+              {
+                tooltip: 'Members Management',
+                label: 'House Members',
+                href: '/members',
+                icon: Users,
+                isActive: pathname === '/members' || pathname?.startsWith('/members?'),
+              },
+            ].map((item, idx) => {
+              const IconComp = item.icon;
+              return (
+                <SidebarMenuItem key={idx}>
+                  <SidebarMenuButton
+                    tooltip={item.tooltip}
+                    isActive={item.isActive}
+                    className={cn(
+                      item.isActive && 'bg-teal-700! text-white! hover:bg-teal-800! hover:text-white!'
+                    )}
+                    render={<Link href={item.href} />}
+                  >
+                    <IconComp
+                      className={cn(
+                        'size-4 shrink-0',
+                        item.isActive ? 'text-white!' : 'text-teal-600 dark:text-teal-400'
+                      )}
+                    />
+                    <span
+                      className={cn(
+                        'truncate text-xs font-bold',
+                        item.isActive ? 'text-white!' : 'text-zinc-800 dark:text-zinc-200'
+                      )}
+                    >
+                      {item.label}
+                    </span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
           </SidebarMenu>
         </SidebarGroup>
+
+        {/* {pathname === '/months' && (
+          <SidebarGroup>
+            <div className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              Month Views & Tabs
+            </div>
+            <SidebarMenu className="space-y-0.5">
+              {[
+                { key: 'personwise', label: 'Member Summary', icon: Users },
+                { key: 'datewise', label: 'Date-Wise Matrix', icon: Calendar },
+                { key: 'bazar', label: 'Bazar Expenses', icon: ShoppingBag },
+                { key: 'extra', label: 'Fixed Utilities', icon: Receipt },
+              ].map((tab) => {
+                const currentTab = searchParams.get('tab') || 'personwise';
+                const month = searchParams.get('month') || 'january';
+                const year = searchParams.get('year') || '2026';
+                const href = `/months?month=${month}&year=${year}&tab=${tab.key}`;
+                const isActive = currentTab === tab.key;
+                const Icon = tab.icon;
+
+                return (
+                  <SidebarMenuItem key={tab.key}>
+                    <SidebarMenuButton
+                      tooltip={tab.label}
+                      isActive={isActive}
+                      render={<Link href={href} />}
+                    >
+                      <Icon className="size-3.5 text-teal-600 dark:text-teal-400 shrink-0" />
+                      <span className="truncate text-xs font-medium">{tab.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
 
         {isLoading ? <div className="flex items-center justify-center p-4">Loading...</div> : <SidebarGroup>
           <SidebarMenu className="mt-1 space-y-0.5">
@@ -132,7 +227,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               );
             })}
           </SidebarMenu>
-        </SidebarGroup>}
+        </SidebarGroup>} */}
       </SidebarContent>
 
       <SidebarFooter>

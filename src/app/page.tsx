@@ -8,7 +8,7 @@ export default function Home() {
   const router = useRouter();
 
   React.useEffect(() => {
-    router.push('/months');
+    router.push('/summary');
   }, [router])
 
   return <div className='flex justify-center items-center h-full w-full'>
