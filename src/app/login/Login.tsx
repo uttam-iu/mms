@@ -113,12 +113,6 @@ export function LoginForm() {
             </div>
           </CardContent>
         </form>
-        <CardFooter className="flex flex-wrap items-center justify-center gap-1 text-sm text-muted-foreground">
-          New Here?{" "}
-          <Link href="/register" className="font-medium text-teal-600 hover:underline">
-            Register
-          </Link>
-        </CardFooter>
       </Card>
     </div>
   );

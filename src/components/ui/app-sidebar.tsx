@@ -47,7 +47,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     socket.connect()
   }, []);
 
-  const { isLoading, resp } = useApiCall('menus', 'GET', {});
+  const { isLoading, resp } = useApiCall<{ data: MONTH_META[] }>('menus', 'GET', {});
 
   return (
     <Sidebar collapsible="icon" className="border-r border-zinc-200 dark:border-zinc-800" {...props}>
