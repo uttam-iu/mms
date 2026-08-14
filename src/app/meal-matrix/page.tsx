@@ -1,55 +1,36 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { generateMonthlyMealData } from '@/dummyData/mealData';
-import { DailyMealEntry, MonthlyMealData } from '@/types/meal.types';
+import { DailyMealEntry } from '@/types/meal.types';
 import { useTitle } from '@/hooks/useTitle';
 import { SummaryFilter } from '../../components/SummaryFilter';
 import { DatewiseSummaryTable } from './DatewiseSummaryTable';
-import { MealEntryDialog } from './MealEntryDialog';
+import { useSocket } from '@/hooks/useSocket';
+import { initcap } from '@/lib/utils';
+
+interface DailyMealEntriesRespType {
+    dailyMealEntries: DailyMealEntry[],
+    memberMeta: { label: string, value: string }[] | []
+}
 
 export default function MonthDetailPage() {
     const searchParams = useSearchParams();
 
-    const paramYear = searchParams.get('year') || 2026;
-    const paramMonth = searchParams.get('month') || 'january';
-    const [mealData, setMealData] = useState<MonthlyMealData>(() =>
-        generateMonthlyMealData(Number(paramYear), paramMonth)
-    );
-    const [isAddMealOpen, setIsAddMealOpen] = useState(false);
-    const [editingMealEntry, setEditingMealEntry] = useState<DailyMealEntry | null>(null);
-    const [deleteTarget, setDeleteTarget] = useState<{
-        type: 'bazar' | 'extra' | 'meal';
-        idOrDate: string;
-        title?: string;
-    } | null>(null);
+    const year = searchParams.get('year');
+    const month = searchParams.get('month') || '';
 
-    useEffect(() => {
-        setMealData(generateMonthlyMealData(Number(paramYear), paramMonth));
-    }, [paramYear, paramMonth]);
+    const [dialogProps, setDialogProps] = useState<{ type: string, row: DailyMealEntry | null } | null>(null);
 
-    const handleDeleteMealEntry = (targetDate: string) => {
-        console.log('df')
-        setDeleteTarget(null);
-    };
-
-    const handleSaveMealEntrySubmit = (
-        targetDate: string,
-        memberMealsMap: { [userId: number]: { breakfast: number; lunch: number; dinner: number; total: number } }
-    ) => {
-        console.log('fsf')
-        setIsAddMealOpen(false);
-        setEditingMealEntry(null);
-    };
-
+    const { data: dailyMealEntriesResp, isLoading, refetch } = useSocket<{ data: DailyMealEntriesRespType }>('emit', 'meal_matrix', {
+        month,
+        year,
+    });
 
     const getTitle = useCallback(() => {
-        const month = searchParams?.get('month') || '';
-        const year = searchParams?.get('year') || '';
-        return `Meal Matrix (${month.charAt(0).toUpperCase() + month.slice(1)} ${year})`;
-    }, [searchParams]);
+        return `Meal Matrix (${initcap(month)} ${year})`;
+    }, [month, year]);
 
     useTitle(getTitle());
 
@@ -63,46 +44,12 @@ export default function MonthDetailPage() {
 
             <div className="max-w-7xl mx-auto px-2 pt-2 space-y-6 w-full min-w-0">
                 <DatewiseSummaryTable
-                    mealData={mealData}
-                    setIsAddMealOpen={() => {
-                        setEditingMealEntry(null);
-                        setIsAddMealOpen(true);
-                    }}
-                    onEditMeal={(entry) => {
-                        setEditingMealEntry(entry);
-                        setIsAddMealOpen(true);
-                    }}
-                    onDeleteMeal={(date) => {
-                        setDeleteTarget({
-                            type: 'meal',
-                            idOrDate: date,
-                            title: `Delete Meal Entry for ${date}`,
-                        });
-                    }}
+                    dailyMealEntries={dailyMealEntriesResp?.data?.dailyMealEntries || []}
+                    isLoading={isLoading}
+                    onUpdate={(row) => setDialogProps({ type: 'EDIT', row })}
+                    memberMeta={dailyMealEntriesResp?.data?.memberMeta || []}
                 />
             </div>
-            {/* <DeleteConfirmDialog
-                isOpen={!!deleteTarget}
-                onClose={() => setDeleteTarget(null)}
-                onConfirm={() => {
-                    if (!deleteTarget) return;
-                    handleDeleteMealEntry(deleteTarget.idOrDate);
-                }}
-                title={deleteTarget?.title || 'Confirm Deletion'}
-                description="Are you sure you want to delete this item? This action will immediately recalculate all monthly totals and member balances."
-            /> */}
-
-            <MealEntryDialog
-                isOpen={isAddMealOpen}
-                onClose={() => {
-                    setIsAddMealOpen(false);
-                    setEditingMealEntry(null);
-                }}
-                onSubmit={handleSaveMealEntrySubmit}
-                mealData={mealData}
-                editingEntry={editingMealEntry}
-            />
-
         </div>
     );
 }

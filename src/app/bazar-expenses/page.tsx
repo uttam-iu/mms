@@ -11,7 +11,7 @@ import { BazarwiseExpenseSummaryTable } from './BazarExpenseSumaryTable';
 import { AddBazarExpenceDialog } from './AddBazarExpenceDialog';
 import { useSocket } from '@/hooks/useSocket';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
-import { displayFormattedDate } from '@/lib/utils';
+import { displayFormattedDate, initcap } from '@/lib/utils';
 
 interface BazarExpenseResp {
     bazarExpenses: BazarExpense[],
@@ -21,18 +21,18 @@ interface BazarExpenseResp {
 
 export default function MonthDetailPage() {
     const searchParams = useSearchParams();
-    const paramYear = searchParams.get('year');
-    const paramMonth = searchParams.get('month');
+    const year = searchParams.get('year');
+    const month = searchParams.get('month');
     const [dialogProps, setDialogProps] = useState<{ type: 'ADD' | 'EDIT' | 'DELETE', row: BazarExpense | null } | null>(null);
 
     const { data: bazarExpensesResp, isLoading, refetch } = useSocket<{ data: BazarExpenseResp }>('emit', 'bazar_expenses', {
-        month: paramMonth,
-        year: paramYear,
+        month,
+        year,
     });
 
     const getTitle = useCallback(() => {
-        return `Bazar Expenses (${paramMonth?.charAt(0)?.toUpperCase() || "" + paramMonth?.slice(1) || ""} ${paramYear})`;
-    }, [paramMonth, paramYear]);
+        return `Bazar Expenses (${initcap(month || '')} ${year})`;
+    }, [month, year]);
 
     useTitle(getTitle());
 
@@ -92,12 +92,10 @@ export default function MonthDetailPage() {
                 row={dialogProps?.row}
                 type={dialogProps?.type}
                 refetch={refetch}
-                year={paramYear || ''}
-                month={paramMonth || ''}
+                year={year || ''}
+                month={month || ''}
                 activeMemberMeta={bazarExpensesResp?.data?.activeMemberMeta || []}
-
             />}
-
         </div>
     );
 }

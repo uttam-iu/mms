@@ -22,17 +22,11 @@ export interface MemberMealSummary {
 
 export interface DailyMealEntry {
   date: string; // YYYY-MM-DD
-  dayNumber: number;
-  dayName: string;
-  memberMeals: {
-    [userId: number]: {
-      breakfast: number;
-      lunch: number;
-      dinner: number;
-      total: number;
-    };
-  };
+  dayName?: string;
   dailyTotalMeals: number;
+  memberMeals: {
+    [userId: string]: number;
+  };
 }
 
 export interface BazarExpense {

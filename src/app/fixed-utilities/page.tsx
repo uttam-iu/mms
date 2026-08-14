@@ -11,26 +11,23 @@ import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { ExtraExpenseTable } from './ExtraExpenseTable';
 import { ExtraExpenseDialog } from './ExtraExpenseDialog';
 import { useSocket } from '@/hooks/useSocket';
+import { initcap } from '@/lib/utils';
 
 export default function FixedCostPage() {
     const searchParams = useSearchParams();
-
-    const paramYear = searchParams.get('year');
-    const paramMonth = searchParams.get('month');
+    const year = searchParams.get('year');
+    const month = searchParams.get('month');
 
     const { data: monthwiseFixedCost, isLoading, refetch } = useSocket<{ data: { fixedCosts: ExtraExpense[], activeMembers: number } }>('emit', 'fixed_utility_cost', {
-        month: paramMonth,
-        year: paramYear,
+        month,
+        year,
     });
-
 
     const [dialogProps, setDialogProps] = useState<{ type: 'ADD' | 'EDIT' | 'DELETE', row: ExtraExpense | null } | null>(null);
 
     const getTitle = useCallback(() => {
-        const month = searchParams?.get('month') || '';
-        const year = searchParams?.get('year') || '';
-        return `Fixed Utilities (${month.charAt(0).toUpperCase() + month.slice(1)} ${year})`;
-    }, [searchParams]);
+        return `Fixed Utilities (${initcap(month || '')} ${year})`;
+    }, [month, year]);
 
     useTitle(getTitle());
 
@@ -86,8 +83,8 @@ export default function FixedCostPage() {
                 row={dialogProps?.row}
                 type={dialogProps?.type}
                 refetch={refetch}
-                year={paramYear || ''}
-                month={paramMonth || ''}
+                year={year || ''}
+                month={month || ''}
             />}
 
         </div>

@@ -15,28 +15,27 @@ import { TotalExtraCostDialog } from './TotalExtraCostDialog';
 import { BazarCostDialog } from './BazarCostDialog';
 import { NetBalanceDialog } from './NetBalanceDialog';
 import { PersonwiseSummaryTable } from './PersonwiseSummaryTable';
+import { initcap } from '@/lib/utils';
 
 export default function MonthDetailPage() {
     const searchParams = useSearchParams();
 
-    const paramYear = searchParams.get('year') || 2026;
-    const paramMonth = searchParams.get('month') || 'january';
+    const year = searchParams?.get('year');
+    const month = searchParams?.get('month') || '';
     const [mealData, setMealData] = useState<MonthlyMealData>(() =>
-        generateMonthlyMealData(Number(paramYear), paramMonth)
+        generateMonthlyMealData(Number(year), month)
     );
 
     useEffect(() => {
-        setMealData(generateMonthlyMealData(Number(paramYear), paramMonth));
-    }, [paramYear, paramMonth]);
+        setMealData(generateMonthlyMealData(Number(year), month));
+    }, [year, month]);
 
     const [activeCardDialog, setActiveCardDialog] = useState<
         'totalCost' | 'totalMeal' | 'mealRate' | 'totalExtra' | 'bazarCost' | 'deposits' | 'netBalance' | null
     >(null);
 
     const getTitle = useCallback(() => {
-        const month = searchParams?.get('month') || '';
-        const year = searchParams?.get('year') || '';
-        return `Monthly Summary (${month.charAt(0).toUpperCase() + month.slice(1)} ${year})`;
+        return `Monthly Summary (${initcap(month)} ${year})`;
     }, [searchParams]);
 
     useTitle(getTitle());

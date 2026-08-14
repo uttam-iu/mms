@@ -343,4 +343,17 @@ export const MONTH_LIST = [
   { value: "december", label: "December", monthNumber: 12 },
 ];
 
-export const AVAILABLE_YEARS = [2026, 2025, 2024, 2023, 2022, 2021, 2020];
+export const getAvailableYear = () => {
+    const availableYears = [];
+    const currentYear = new Date().getFullYear();
+    for (let year = currentYear; year >= 2026; year--) {
+        availableYears.push(year);
+    }
+    return availableYears;
+};
+
+export const initcap = (str:string) => {
+    return str.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { 
+        return a.toUpperCase(); 
+    });
+}

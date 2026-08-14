@@ -1,6 +1,6 @@
 "use client";
 
-import { AVAILABLE_YEARS, MONTH_LIST } from "@/lib/utils";
+import { getAvailableYear, MONTH_LIST } from "@/lib/utils";
 import { Filter } from "lucide-react";
 import { Button } from '@/components/ui/button';
 import React from "react";
@@ -52,7 +52,7 @@ export const SummaryFilter = ({ pathName }: { pathName: String }) => {
                     onChange={(e) => setFilterData({ ...filterData, year: e.target.value })}
                     className="h-8 text-xs font-semibold rounded-lg bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-2 text-zinc-800 dark:text-zinc-200 focus:outline-hidden focus:ring-2 focus:ring-teal-500 cursor-pointer"
                 >
-                    {AVAILABLE_YEARS?.map((yr) => (
+                    {getAvailableYear()?.map((yr) => (
                         <option key={yr} value={yr}>
                             {yr}
                         </option>

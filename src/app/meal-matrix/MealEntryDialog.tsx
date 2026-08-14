@@ -4,86 +4,147 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { MonthlyMealData, DailyMealEntry } from "@/types/meal.types";
 import { Calendar } from "lucide-react";
+import { showToast } from '@/lib/utils';
+import { getSocket } from '@/lib/socket';
+import { ApiResponse } from '@/types/user.types';
 
 interface MealEntryDialogProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSubmit: (date: string, memberMeals: { [userId: number]: { breakfast: number; lunch: number; dinner: number; total: number } }) => void;
-    mealData: MonthlyMealData;
-    editingEntry?: DailyMealEntry | null;
+    onCancel: () => void;
+    refetch: () => void;
+    row?: DailyMealEntry | null;
+    type: 'EDIT' | 'ADD';
+    year: string;
+    month: string;
+    activeMemberMeta: { userId: number; fullName: string }[];
 }
 
 export const MealEntryDialog: React.FC<MealEntryDialogProps> = ({
-    isOpen,
-    onClose,
-    onSubmit,
-    mealData,
-    editingEntry,
+    onCancel,
+    type,
+    row,
+    year,
+    month,
+    refetch,
+    activeMemberMeta
 }) => {
-    const [date, setDate] = useState('');
-    const [memberMealsState, setMemberMealsState] = useState<{
-        [userId: number]: { breakfast: number; lunch: number; dinner: number; total: number }
-    }>({});
+    // const [date, setDate] = useState('');
+    // const [memberMealsState, setMemberMealsState] = useState<{
+    //     [userId: number]: { breakfast: number; lunch: number; dinner: number; total: number }
+    // }>({});
 
-    useEffect(() => {
-        const initialMap: { [userId: number]: { breakfast: number; lunch: number; dinner: number; total: number } } = {};
+    // useEffect(() => {
+    //     const initialMap: { [userId: number]: { breakfast: number; lunch: number; dinner: number; total: number } } = {};
 
-        if (editingEntry) {
-            setDate(editingEntry.date);
-            mealData.activeMembers.forEach((m) => {
-                const existing = editingEntry.memberMeals[m.userId] || { breakfast: 0, lunch: 0, dinner: 0, total: 0 };
-                initialMap[m.userId] = { ...existing };
-            });
-        } else {
-            const today = new Date().toISOString().split('T')[0];
-            setDate(today);
-            mealData.activeMembers.forEach((m) => {
-                initialMap[m.userId] = { breakfast: 0.5, lunch: 1, dinner: 1, total: 2.5 };
-            });
-        }
-        setMemberMealsState(initialMap);
-    }, [editingEntry, isOpen, mealData.activeMembers]);
+    //     if (editingEntry) {
+    //         setDate(editingEntry.date);
+    //         mealData.activeMembers.forEach((m) => {
+    //             const existing = editingEntry.memberMeals[m.userId] || { breakfast: 0, lunch: 0, dinner: 0, total: 0 };
+    //             initialMap[m.userId] = { ...existing };
+    //         });
+    //     } else {
+    //         const today = new Date().toISOString().split('T')[0];
+    //         setDate(today);
+    //         mealData.activeMembers.forEach((m) => {
+    //             initialMap[m.userId] = { breakfast: 0.5, lunch: 1, dinner: 1, total: 2.5 };
+    //         });
+    //     }
+    //     setMemberMealsState(initialMap);
+    // }, [editingEntry, isOpen, mealData.activeMembers]);
 
-    const handleCountChange = (userId: number, field: 'breakfast' | 'lunch' | 'dinner', value: number) => {
-        setMemberMealsState((prev) => {
-            const current = prev[userId] || { breakfast: 0, lunch: 0, dinner: 0, total: 0 };
-            const updatedField = Math.max(0, value);
-            const updated = { ...current, [field]: updatedField };
-            updated.total = (updated.breakfast || 0) + (updated.lunch || 0) + (updated.dinner || 0);
-            return { ...prev, [userId]: updated };
-        });
-    };
+    // const handleCountChange = (userId: number, field: 'breakfast' | 'lunch' | 'dinner', value: number) => {
+    //     setMemberMealsState((prev) => {
+    //         const current = prev[userId] || { breakfast: 0, lunch: 0, dinner: 0, total: 0 };
+    //         const updatedField = Math.max(0, value);
+    //         const updated = { ...current, [field]: updatedField };
+    //         updated.total = (updated.breakfast || 0) + (updated.lunch || 0) + (updated.dinner || 0);
+    //         return { ...prev, [userId]: updated };
+    //     });
+    // };
+
+    // const handleSubmit = (e: React.FormEvent) => {
+    //     e.preventDefault();
+    //     if (!date) return;
+    //     onSubmit(date, memberMealsState);
+    //     onClose();
+    // };
+
+    const [loading, setLoading] = React.useState(false)
+
+    const [formData, setFormData] = React.useState({
+        date: row?.date || '',
+        memberMeals: row?.memberMeals || activeMemberMeta.map((m) => {
+            return {
+                userId: m.userId,
+                fullName: m.fullName,
+                breakfast: 0.5,
+                lunch: 1,
+                dinner: 1,
+            }
+        }),
+        year,
+        month
+    })
+
+    // useEffect(() => {
+    //     if (row) {
+    //         setFormData((prev) => ({
+    //             ...prev,
+    //             billId: row?.billId || '',
+    //             billTitle: row?.billTitle || '',
+    //             category: row.category,
+    //             amount: row.amount.toString(),
+    //             description: row.description ?? '',
+    //             year: row?.year,
+    //             month: row?.month,
+    //         }));
+    //     }
+    // }, [row]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!date) return;
-        onSubmit(date, memberMealsState);
-        onClose();
+        console.log(formData)
+        // const numAmount = parseFloat(String(formData.amount));
+        // if (!formData?.billTitle.trim() || isNaN(numAmount) || numAmount <= 0) return;
+
+        // const socket = getSocket()
+        // setLoading(true)
+        // socket?.emit('meal_update', { ...formData, amount: parseFloat(formData.amount) || 0 }, (res: ApiResponse<DailyMealEntry>) => {
+        //     if (res?.success) {
+        //         showToast(res?.message, 'success')
+        //         setLoading(false)
+        //         refetch()
+        //         onCancel()
+        //     } else {
+        //         showToast(res?.message, 'error')
+        //         setLoading(false)
+        //     }
+        // })
     };
 
+
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <Dialog open>
             <DialogContent className="sm:max-w-[520px] max-h-[85vh] overflow-y-auto custom-scrollbar">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle className="text-sm font-bold flex items-center gap-2">
                             <Calendar className="text-teal-600" size={16} />
-                            {editingEntry ? `Edit Daily Meal Matrix (${editingEntry.date})` : 'Record Daily Meals'}
+                            {row ? `Edit Daily Meal Matrix (${row.date})` : 'Record Daily Meals'}
                         </DialogTitle>
                     </DialogHeader>
 
                     <div className="space-y-4 py-3 text-xs">
                         <div>
                             <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                                Target Date
+                                Date
                             </label>
                             <Input
                                 type="date"
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
+                                value={formData.date}
+                                onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
                                 className="h-8 text-xs bg-white dark:bg-zinc-900"
                                 required
-                                disabled={!!editingEntry}
+                                disabled={!!row}
                             />
                         </div>
 
@@ -92,8 +153,8 @@ export const MealEntryDialog: React.FC<MealEntryDialogProps> = ({
                                 Member Meal Breakdown (Breakfast / Lunch / Dinner)
                             </label>
 
-                            {mealData.activeMembers.map((m) => {
-                                const mMeal = memberMealsState[m.userId] || { breakfast: 0, lunch: 0, dinner: 0, total: 0 };
+                            {/* {activeMemberMeta.map((m) => {
+                                const mMeal = formData.memberMeals[m.userId] || { breakfast: 0, lunch: 0, dinner: 0, total: 0 };
                                 return (
                                     <div
                                         key={m.userId}
@@ -149,16 +210,16 @@ export const MealEntryDialog: React.FC<MealEntryDialogProps> = ({
                                         </div>
                                     </div>
                                 );
-                            })}
+                            })} */}
                         </div>
                     </div>
 
                     <DialogFooter>
-                        <Button type="button" variant="outline" size="sm" onClick={onClose}>
+                        <Button type="button" variant="outline" size="sm" onClick={onCancel}>
                             Cancel
                         </Button>
                         <Button type="submit" size="sm" className="bg-teal-700 hover:bg-teal-800 text-white">
-                            {editingEntry ? 'Update Meal Matrix' : 'Save Meal Entry'}
+                            {row ? 'Update Meal Matrix' : 'Save Meal Entry'}
                         </Button>
                     </DialogFooter>
                 </form>
