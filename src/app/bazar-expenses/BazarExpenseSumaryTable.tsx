@@ -3,6 +3,7 @@ import { MonthlyMealData, BazarExpense } from "@/types/meal.types"
 import { Plus, Pencil, Trash2 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import _ from "lodash";
+import Loader from "@/components/Loader";
 
 export const BazarwiseExpenseSummaryTable = ({
     bazarExpenses,
@@ -53,7 +54,13 @@ export const BazarwiseExpenseSummaryTable = ({
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/60 text-zinc-800 dark:text-zinc-200">
-                        {bazarExpenses.map((expense, index) => (
+                        {isLoading || bazarExpenses?.length === 0 ? (
+                            <tr>
+                                <td colSpan={7} className="p-4 text-center">
+                                    {isLoading ? <Loader /> : 'No data available'}
+                                </td>
+                            </tr>
+                        ) : bazarExpenses.map((expense, index) => (
                             <tr key={expense?.bazarId} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors">
                                 <td className="p-1 font-semibold text-zinc-700 dark:text-zinc-300 whitespace-nowrap">{index + 1}</td>
                                 <td className="p-1 font-semibold text-zinc-700 dark:text-zinc-300 whitespace-nowrap">{expense.date}</td>
@@ -96,7 +103,7 @@ export const BazarwiseExpenseSummaryTable = ({
                             </tr>
                         ))}
                     </tbody>
-                    <tfoot className="bg-zinc-100 dark:bg-zinc-800 font-bold border-t-2 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100">
+                    {bazarExpenses?.length > 0 && <tfoot className="bg-zinc-100 dark:bg-zinc-800 font-bold border-t-2 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100">
                         <tr>
                             <td colSpan={5} className="p-1">Expenses</td>
                             <td className="p-1 text-right text-teal-700 dark:text-teal-400 text-base font-extrabold">
@@ -106,7 +113,7 @@ export const BazarwiseExpenseSummaryTable = ({
                                 ৳{(_.sumBy(bazarExpenses, 'amount') / (totalMealNumber || 1)).toFixed(2)} / meal
                             </td>
                         </tr>
-                    </tfoot>
+                    </tfoot>}
                 </table>
             </div>
         </div>
