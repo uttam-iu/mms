@@ -22,10 +22,11 @@ export interface MemberMealSummary {
 
 export interface DailyMealEntry {
   date: string; // YYYY-MM-DD
+  dayNumber?: number;
   dayName?: string;
   dailyTotalMeals: number;
   memberMeals: {
-    [userId: string]: number;
+    [userId: string]: any;
   };
 }
 

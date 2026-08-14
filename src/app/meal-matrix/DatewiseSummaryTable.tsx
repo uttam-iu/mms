@@ -1,6 +1,7 @@
+import React, { useState } from "react";
 import Loader from "@/components/Loader";
 import { DailyMealEntry } from "@/types/meal.types";
-import { Pencil } from "lucide-react";
+import { Pencil, Check, X } from "lucide-react";
 
 export const DatewiseSummaryTable = ({
     dailyMealEntries,
@@ -13,6 +14,49 @@ export const DatewiseSummaryTable = ({
     isLoading: boolean;
     memberMeta: { label: string, value: string }[] | []
 }) => {
+    const [editingDate, setEditingDate] = useState<string | null>(null);
+    const [editValues, setEditValues] = useState<{ [userId: string]: string | number }>({});
+
+    const handleStartEdit = (daily: DailyMealEntry) => {
+        setEditingDate(daily.date);
+        const initialMap: { [userId: string]: string | number } = {};
+        memberMeta.forEach((m) => {
+            const val = daily.memberMeals?.[m.value];
+            initialMap[m.value] = val !== undefined && val !== null ? val : '';
+        });
+        setEditValues(initialMap);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingDate(null);
+        setEditValues({});
+    };
+
+    const handleSaveEdit = (daily: DailyMealEntry) => {
+        const userIdWiseMeals: { [userId: string]: number } = {};
+        memberMeta.forEach((m) => {
+            const rawVal = editValues[m.value];
+            const numVal = rawVal === '' || rawVal === undefined || rawVal === null ? 0 : parseFloat(String(rawVal)) || 0;
+            userIdWiseMeals[m.value] = numVal;
+        });
+
+        console.log('Saved Meal Matrix (userId wise):', {
+            date: daily.date,
+            userMeals: userIdWiseMeals,
+            rawInputs: editValues
+        });
+
+        if (onUpdate) {
+            onUpdate({
+                ...daily,
+                memberMeals: userIdWiseMeals
+            });
+        }
+
+        setEditingDate(null);
+        setEditValues({});
+    };
+
     return (
         <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs overflow-hidden">
             <div className="p-2 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between flex-wrap gap-2">
@@ -36,7 +80,6 @@ export const DatewiseSummaryTable = ({
                             {memberMeta.map((m) => (
                                 <th key={m.value} className="p-1 border-b border-zinc-200 dark:border-zinc-700 text-center min-w-[120px]">
                                     <div className="font-bold text-zinc-900 dark:text-zinc-100">{m.label}</div>
-                                    {/* <div className="text-[10px] font-normal text-zinc-400">{m.totalMeals} meals</div> */}
                                 </th>
                             ))}
                             <th className="p-1 border-b border-zinc-200 dark:border-zinc-700 text-center font-bold text-teal-700 dark:text-teal-400 min-w-[100px]">
@@ -48,15 +91,16 @@ export const DatewiseSummaryTable = ({
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/80">
-                        {
-                            isLoading || dailyMealEntries?.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="p-4 text-center">
-                                        {isLoading ? <Loader /> : 'No data available'}
-                                    </td>
-                                </tr>
-                            ) :
-                                dailyMealEntries?.map((daily, index) => (
+                        {isLoading || dailyMealEntries?.length === 0 ? (
+                            <tr>
+                                <td colSpan={memberMeta.length + 5} className="p-4 text-center">
+                                    {isLoading ? <Loader /> : 'No data available'}
+                                </td>
+                            </tr>
+                        ) : (
+                            dailyMealEntries?.map((daily, index) => {
+                                const isEditing = editingDate === daily.date;
+                                return (
                                     <tr key={daily.date} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
                                         <td className="p-1 text-center text-zinc-500 font-medium">
                                             {index + 1}
@@ -68,7 +112,28 @@ export const DatewiseSummaryTable = ({
                                             {daily.dayName}
                                         </td>
                                         {memberMeta?.map((m) => {
-                                            const mData = daily.memberMeals[m.value];
+                                            const mData = daily.memberMeals?.[m.value] ?? 0;
+                                            if (isEditing) {
+                                                return (
+                                                    <td key={m.value} className="p-1 text-center">
+                                                        <input
+                                                            type="number"
+                                                            step="any"
+                                                            min="0"
+                                                            value={editValues[m.value] ?? ''}
+                                                            onChange={(e) => {
+                                                                const val = e.target.value;
+                                                                setEditValues((prev) => ({
+                                                                    ...prev,
+                                                                    [m.value]: val
+                                                                }));
+                                                            }}
+                                                            className="w-14 h-7 text-center rounded border border-teal-500 bg-white dark:bg-zinc-900 font-bold text-xs text-teal-800 dark:text-teal-300 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                                                        />
+                                                    </td>
+                                                );
+                                            }
+
                                             return (
                                                 <td key={m.value} className="p-1 text-center">
                                                     <span
@@ -87,18 +152,41 @@ export const DatewiseSummaryTable = ({
                                         </td>
                                         <td className="p-1 text-center whitespace-nowrap">
                                             <div className="flex items-center justify-center gap-1">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => onUpdate?.(daily)}
-                                                    className="p-1 rounded text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-950/50 cursor-pointer transition-colors"
-                                                    title="Edit Meal Entry"
-                                                >
-                                                    <Pencil size={14} />
-                                                </button>
+                                                {isEditing ? (
+                                                    <>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleSaveEdit(daily)}
+                                                            className="p-1 rounded bg-teal-600 hover:bg-teal-700 text-white cursor-pointer transition-colors shadow-xs"
+                                                            title="Save Meal Entry"
+                                                        >
+                                                            <Check size={14} />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleCancelEdit}
+                                                            className="p-1 rounded text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
+                                                            title="Cancel Edit"
+                                                        >
+                                                            <X size={14} />
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleStartEdit(daily)}
+                                                        className="p-1 rounded text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-950/50 cursor-pointer transition-colors"
+                                                        title="Edit Meal Entry"
+                                                    >
+                                                        <Pencil size={14} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
+                                );
+                            })
+                        )}
                     </tbody>
                     <tfoot className="bg-zinc-100 dark:bg-zinc-800 font-bold sticky bottom-0 border-t-2 border-zinc-300 dark:border-zinc-700">
                         <tr>
@@ -106,13 +194,16 @@ export const DatewiseSummaryTable = ({
                             <td colSpan={2} className="p-1 text-zinc-900 dark:text-zinc-100">
                                 Summary
                             </td>
-                            {memberMeta.map((m) => (
-                                <td key={m.value} className="p-1 text-center text-amber-600 dark:text-amber-400 font-extrabold text-sm">
-                                    {0}
-                                </td>
-                            ))}
+                            {memberMeta.map((m) => {
+                                const total = dailyMealEntries?.reduce((sum, d) => sum + (d.memberMeals?.[m.value] || 0), 0);
+                                return (
+                                    <td key={m.value} className="p-1 text-center text-amber-600 dark:text-amber-400 font-extrabold text-sm">
+                                        {total}
+                                    </td>
+                                );
+                            })}
                             <td className="p-1 text-center text-teal-700 dark:text-teal-300 font-black text-sm">
-                                {0}
+                                {dailyMealEntries?.reduce((sum, d) => sum + (d.dailyTotalMeals || 0), 0)}
                             </td>
                             <td className="p-1"></td>
                         </tr>
