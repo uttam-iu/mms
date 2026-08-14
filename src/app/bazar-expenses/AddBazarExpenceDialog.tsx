@@ -1,67 +1,97 @@
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { USER_TYPE } from "@/types/user.types"
+import { ApiResponse } from "@/types/user.types"
 import { BazarExpense } from "@/types/meal.types"
 import { ShoppingBag } from "lucide-react"
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
+import { getSocket } from "@/lib/socket"
+import { showToast } from "@/lib/utils"
+
+interface BazarExpenseUpdate {
+    bazarId?: string;
+    date: string;
+    shopperUserId: string | number;
+    itemsDescription: string;
+    amount: string | number;
+    category: 'Groceries' | 'Vegetables' | 'Meat & Fish' | 'Spices & Cooking' | 'Others';
+    year: string;
+    month: string;
+}
 
 export const AddBazarExpenceDialog = ({
-    isAddBazarOpen,
-    setIsAddBazarOpen,
-    mealData,
-    handleAddBazarSubmit,
-    editingBazar,
+    onCancel,
+    type,
+    row,
+    year,
+    month,
+    refetch,
+    activeMemberMeta
 }: {
-    isAddBazarOpen: boolean;
-    setIsAddBazarOpen: (open: boolean) => void;
-    mealData: any;
-    handleAddBazarSubmit: (e: React.FormEvent, newBazar: any, editingId?: string) => void;
-    editingBazar?: BazarExpense | null;
+    onCancel: () => void;
+    refetch: () => void;
+    row?: BazarExpense | null;
+    type: 'EDIT' | 'ADD';
+    year: string;
+    month: string;
+    activeMemberMeta: { label: string, value: string }[] | []
 }) => {
-    const [newBazar, setNewBazar] = useState({
-        shopperUserId: 1,
+
+    const [loading, setLoading] = React.useState(false);
+
+    const [formData, setFormData] = React.useState<BazarExpenseUpdate>({
+        shopperUserId: activeMemberMeta?.[0]?.value || '',
         itemsDescription: '',
-        amount: '' as string | number,
-        category: 'Groceries' as BazarExpense['category'],
-        receiptNote: '',
+        date: '',
+        amount: '',
+        category: 'Groceries',
+        year,
+        month
     });
 
     useEffect(() => {
-        if (editingBazar) {
-            setNewBazar({
-                shopperUserId: editingBazar.shopperUserId,
-                itemsDescription: editingBazar.itemsDescription,
-                amount: editingBazar.amount,
-                category: editingBazar.category,
-                receiptNote: editingBazar.receiptNote || '',
-            });
-        } else {
-            const firstMemberId = mealData?.activeMembers?.[0]?.userId || 1;
-            setNewBazar({
-                shopperUserId: firstMemberId,
-                itemsDescription: '',
-                amount: '',
-                category: 'Groceries',
-                receiptNote: '',
+        if (row) {
+            setFormData({
+                bazarId: row?.bazarId || row?.id || '',
+                shopperUserId: row?.shopper?.userId !== undefined ? row.shopper.userId.toString() : (row?.shopperUserId !== undefined ? row.shopperUserId.toString() : ''),
+                itemsDescription: row?.itemsDescription || '',
+                amount: row?.amount !== undefined ? row.amount.toString() : '',
+                category: row?.category || 'Groceries',
+                year: row?.year || year,
+                month: row?.month || month,
+                date: row?.date || ''
             });
         }
-    }, [editingBazar, isAddBazarOpen, mealData]);
+    }, [row, year, month, activeMemberMeta]);
 
     const onSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        handleAddBazarSubmit(e, newBazar, editingBazar?.id);
-        setIsAddBazarOpen(false);
+        const numAmount = parseFloat(String(formData.amount));
+        if (!formData?.itemsDescription.trim() || isNaN(numAmount) || numAmount <= 0) return;
+
+        const socket = getSocket();
+        setLoading(true);
+        socket?.emit('bazar_expense_update', { ...formData, amount: numAmount || 0 }, (res: ApiResponse<BazarExpense>) => {
+            if (res?.success) {
+                showToast(res?.message, 'success');
+                setLoading(false);
+                refetch();
+                onCancel();
+            } else {
+                showToast(res?.message, 'error');
+                setLoading(false);
+            }
+        });
     };
 
     return (
-        <Dialog open={isAddBazarOpen} onOpenChange={setIsAddBazarOpen}>
+        <Dialog open onOpenChange={(open) => !open && onCancel()}>
             <DialogContent className="sm:max-w-[420px]">
                 <form onSubmit={onSubmit}>
                     <DialogHeader>
                         <DialogTitle className="text-sm font-bold flex items-center gap-2">
                             <ShoppingBag className="text-teal-600" size={16} />
-                            {editingBazar ? 'Edit Bazar Expense' : 'Log New Bazar Expense'}
+                            {row ? 'Edit Bazar Expense' : 'Log New Bazar Expense'}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -71,23 +101,36 @@ export const AddBazarExpenceDialog = ({
                                 Shopper / Member
                             </label>
                             <select
-                                value={newBazar.shopperUserId}
-                                onChange={(e) => setNewBazar({ ...newBazar, shopperUserId: Number(e.target.value) })}
+                                value={formData.shopperUserId}
+                                onChange={(e) => setFormData((prev) => ({ ...prev, shopperUserId: e.target.value }))}
                                 className="w-full h-8 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 text-xs"
                             >
-                                {mealData.activeMembers.map((m: USER_TYPE) => (
-                                    <option key={m.userId} value={m.userId}>
-                                        {m.fullName}
+                                {activeMemberMeta?.map((m) => (
+                                    <option key={m.value} value={m.value}>
+                                        {m.label}
                                     </option>
                                 ))}
                             </select>
                         </div>
 
                         <div>
+                            <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                                Date
+                            </label>
+                            <Input
+                                type="date"
+                                value={formData?.date}
+                                onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
+                                className="h-8 text-xs bg-white dark:bg-zinc-900"
+                                required
+                            />
+                        </div>
+
+                        <div>
                             <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Category</label>
                             <select
-                                value={newBazar.category}
-                                onChange={(e) => setNewBazar({ ...newBazar, category: e.target.value as any })}
+                                value={formData.category}
+                                onChange={(e) => setFormData((prev) => ({ ...prev, category: e.target.value as BazarExpense['category'] }))}
                                 className="w-full h-8 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 text-xs"
                             >
                                 <option value="Groceries">Groceries</option>
@@ -102,8 +145,8 @@ export const AddBazarExpenceDialog = ({
                             <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Items Description</label>
                             <Input
                                 placeholder="e.g. Rice 10kg, Chicken 2kg, Eggs"
-                                value={newBazar.itemsDescription}
-                                onChange={(e) => setNewBazar({ ...newBazar, itemsDescription: e.target.value })}
+                                value={formData.itemsDescription}
+                                onChange={(e) => setFormData((prev) => ({ ...prev, itemsDescription: e.target.value }))}
                                 className="h-8 text-xs"
                                 required
                             />
@@ -114,30 +157,20 @@ export const AddBazarExpenceDialog = ({
                             <Input
                                 type="number"
                                 placeholder="e.g. 1450"
-                                value={newBazar.amount}
-                                onChange={(e) => setNewBazar({ ...newBazar, amount: e.target.value })}
+                                value={formData.amount}
+                                onChange={(e) => setFormData((prev) => ({ ...prev, amount: e.target.value }))}
                                 className="h-8 text-xs"
                                 required
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Memo / Note (Optional)</label>
-                            <Input
-                                placeholder="e.g. Receipt #104, Paid cash"
-                                value={newBazar.receiptNote}
-                                onChange={(e) => setNewBazar({ ...newBazar, receiptNote: e.target.value })}
-                                className="h-8 text-xs"
                             />
                         </div>
                     </div>
 
                     <DialogFooter>
-                        <Button type="button" variant="outline" size="sm" onClick={() => setIsAddBazarOpen(false)}>
+                        <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={loading}>
                             Cancel
                         </Button>
-                        <Button type="submit" size="sm" className="bg-teal-700 hover:bg-teal-800 text-white">
-                            {editingBazar ? 'Update Expense' : 'Add Expense'}
+                        <Button type="submit" size="sm" disabled={loading} className="bg-teal-700 hover:bg-teal-800 text-white">
+                            {row ? `${loading ? 'Updating...' : 'Save Changes'}` : `${loading ? 'Adding...' : 'Add Expense'}`}
                         </Button>
                     </DialogFooter>
                 </form>

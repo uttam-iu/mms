@@ -1,4 +1,4 @@
-import { IndividualCostItem } from "./user.types";
+import { IndividualCostItem, USER_TYPE } from "./user.types";
 
 export interface MemberMealSummary {
   userId: number;
@@ -36,14 +36,18 @@ export interface DailyMealEntry {
 }
 
 export interface BazarExpense {
-  id: string;
+  bazarId?: string;
+  id?: string;
   date: string;
-  shopperUserId: number;
-  shopperName: string;
-  shopperPhoto: string;
+  shopper?: USER_TYPE;
+  shopperUserId?: number;
+  shopperName?: string;
+  shopperPhoto?: string;
   itemsDescription: string;
   amount: number;
   category: 'Groceries' | 'Vegetables' | 'Meat & Fish' | 'Spices & Cooking' | 'Others';
+  year?: string;
+  month?: string;
   receiptNote?: string;
 }
 

@@ -9,55 +9,30 @@ import { useTitle } from '@/hooks/useTitle';
 import { SummaryFilter } from '../../components/SummaryFilter';
 import { BazarwiseExpenseSummaryTable } from './BazarExpenseSumaryTable';
 import { AddBazarExpenceDialog } from './AddBazarExpenceDialog';
+import { useSocket } from '@/hooks/useSocket';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { displayFormattedDate } from '@/lib/utils';
+
+interface BazarExpenseResp {
+    bazarExpenses: BazarExpense[],
+    totalMealNumber: number,
+    activeMemberMeta: { label: string, value: string }[] | []
+}
 
 export default function MonthDetailPage() {
     const searchParams = useSearchParams();
+    const paramYear = searchParams.get('year');
+    const paramMonth = searchParams.get('month');
+    const [dialogProps, setDialogProps] = useState<{ type: 'ADD' | 'EDIT' | 'DELETE', row: BazarExpense | null } | null>(null);
 
-    const paramYear = searchParams.get('year') || 2026;
-    const paramMonth = searchParams.get('month') || 'january';
-    const [mealData, setMealData] = useState<MonthlyMealData>(() =>
-        generateMonthlyMealData(Number(paramYear), paramMonth)
-    );
-    const [isAddBazarOpen, setIsAddBazarOpen] = useState(false);
-    const [editingBazar, setEditingBazar] = useState<BazarExpense | null>(null);
-    const [deleteTarget, setDeleteTarget] = useState<{
-        type: 'bazar' | 'extra' | 'meal';
-        idOrDate: string;
-        title?: string;
-    } | null>(null);
-
-    useEffect(() => {
-        setMealData(generateMonthlyMealData(Number(paramYear), paramMonth));
-    }, [paramYear, paramMonth]);
-
-    const handleDeleteBazar = (targetDate: string) => {
-        console.log('df')
-        setDeleteTarget(null);
-    };
-
-    const handleAddOrEditBazarSubmit = (
-        e: React.FormEvent,
-        bazarForm: any,
-        editingId?: string
-    ) => {
-        e.preventDefault();
-        if (!bazarForm.itemsDescription || !bazarForm.amount) return;
-
-        const amountNum = parseFloat(String(bazarForm.amount));
-        if (isNaN(amountNum) || amountNum <= 0) return;
-
-        const shopper = mealData.activeMembers.find((m) => m.userId === Number(bazarForm.shopperUserId));
-
-        setIsAddBazarOpen(false);
-        setEditingBazar(null);
-    };
-
+    const { data: bazarExpensesResp, isLoading, refetch } = useSocket<{ data: BazarExpenseResp }>('emit', 'bazar_expenses', {
+        month: paramMonth,
+        year: paramYear,
+    });
 
     const getTitle = useCallback(() => {
-        const month = searchParams?.get('month') || '';
-        const year = searchParams?.get('year') || '';
-        return `Bazar Expenses (${month.charAt(0).toUpperCase() + month.slice(1)} ${year})`;
-    }, [searchParams]);
+        return `Bazar Expenses (${paramMonth?.charAt(0)?.toUpperCase() || "" + paramMonth?.slice(1) || ""} ${paramYear})`;
+    }, [paramMonth, paramYear]);
 
     useTitle(getTitle());
 
@@ -71,47 +46,57 @@ export default function MonthDetailPage() {
 
             <div className="max-w-7xl mx-auto px-2 pt-2 space-y-6 w-full min-w-0">
                 <BazarwiseExpenseSummaryTable
-                    mealData={mealData}
-                    setIsAddBazarOpen={() => {
-                        setEditingBazar(null);
-                        setIsAddBazarOpen(true);
-                    }}
-                    onEditBazar={(expense) => {
-                        setEditingBazar(expense);
-                        setIsAddBazarOpen(true);
-                    }}
-                    onDeleteBazar={(expenseId) => {
-                        const exp = mealData.bazarExpenses.find((b) => b.id === expenseId);
-                        setDeleteTarget({
-                            type: 'bazar',
-                            idOrDate: expenseId,
-                            title: `Delete Bazar Expense (${exp?.itemsDescription || 'Item'})`,
-                        });
-                    }}
+                    bazarExpenses={bazarExpensesResp?.data?.bazarExpenses || []}
+                    isLoading={isLoading}
+                    totalMealNumber={bazarExpensesResp?.data?.totalMealNumber || 1}
+                    onAddNew={() => setDialogProps({ type: 'ADD', row: null })}
+                    onUpdate={(row) => setDialogProps({ type: 'EDIT', row })}
+                    onDelete={(row) => setDialogProps({ type: 'DELETE', row })}
                 />
             </div>
-            {/* <DeleteConfirmDialog
-                isOpen={!!deleteTarget}
-                onClose={() => setDeleteTarget(null)}
-                onConfirm={() => {
-                    if (!deleteTarget) return;
-                    handleDeleteBazar(deleteTarget.idOrDate);
+            {dialogProps?.type === 'DELETE' && <DeleteConfirmDialog
+                onCancel={() => setDialogProps(null)}
+                refetch={refetch}
+                title={'Confirmirmation'}
+                emitKey='delete_bazar_expense'
+                payload={{ id: dialogProps?.row?.bazarId || '' }}
+                body={
+                    <div>
+                        <div className='flex gap-1'>
+                            <div className='text-sm w-[100px]'>Date</div>
+                            <div className='text-sm text-muted-foreground'> : {`${displayFormattedDate(dialogProps?.row?.date || '')}`}</div>
+                        </div>
+                        <div className='flex  gap-1'>
+                            <div className='text-sm w-[100px]'>Shopper</div>
+                            <div className='text-sm text-muted-foreground'> : {dialogProps?.row?.shopper?.fullName}</div>
+                        </div>
+                        <div className='flex gap-1'>
+                            <div className='text-sm w-[100px]'>Category</div>
+                            <div className='text-sm text-muted-foreground'> : {dialogProps?.row?.category}</div>
+                        </div>
+                        <div className='flex gap-1'>
+                            <div className='text-sm w-[100px]'>Amount</div>
+                            <div className='text-sm text-muted-foreground'> : {dialogProps?.row?.amount}</div>
+                        </div>
+                        <div className='flex gap-1'>
+                            <div className='text-sm w-[100px]'>Description</div>
+                            <div className='text-sm text-muted-foreground'> : {dialogProps?.row?.itemsDescription}</div>
+                        </div>
+                    </div>
+                }
+                description={`This action will immediately recalculate all monthly totals. Are you sure you want to delete this item?`}
+            />}
 
-                }}
-                title={deleteTarget?.title || 'Confirm Deletion'}
-                description="Are you sure you want to delete this item? This action will immediately recalculate all monthly totals and member balances."
-            /> */}
+            {(dialogProps?.type === 'EDIT' || dialogProps?.type === 'ADD') && <AddBazarExpenceDialog
+                onCancel={() => setDialogProps(null)}
+                row={dialogProps?.row}
+                type={dialogProps?.type}
+                refetch={refetch}
+                year={paramYear || ''}
+                month={paramMonth || ''}
+                activeMemberMeta={bazarExpensesResp?.data?.activeMemberMeta || []}
 
-            <AddBazarExpenceDialog
-                isAddBazarOpen={isAddBazarOpen}
-                setIsAddBazarOpen={(open) => {
-                    setIsAddBazarOpen(open);
-                    if (!open) setEditingBazar(null);
-                }}
-                mealData={mealData}
-                handleAddBazarSubmit={handleAddOrEditBazarSubmit}
-                editingBazar={editingBazar}
-            />
+            />}
 
         </div>
     );

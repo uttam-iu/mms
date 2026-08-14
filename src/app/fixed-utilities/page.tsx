@@ -46,10 +46,10 @@ export default function FixedCostPage() {
                 <ExtraExpenseTable
                     monthwiseFixedCostData={monthwiseFixedCost?.data?.fixedCosts || []}
                     isLoading={isLoading}
-                    totalActiveMember={monthwiseFixedCost?.data?.activeMembers || 0}
-                    onAddExtra={() => setDialogProps({ type: 'ADD', row: null })}
-                    onEditExtra={(item) => setDialogProps({ type: 'EDIT', row: item })}
-                    onDeleteExtra={(item) => setDialogProps({ type: 'DELETE', row: item })}
+                    totalActiveMember={monthwiseFixedCost?.data?.activeMembers || 1}
+                    onAddNew={() => setDialogProps({ type: 'ADD', row: null })}
+                    onUpdate={(row) => setDialogProps({ type: 'EDIT', row })}
+                    onDelete={(row) => setDialogProps({ type: 'DELETE', row })}
                 />
             </div>
             {dialogProps?.type === 'DELETE' && <DeleteConfirmDialog
