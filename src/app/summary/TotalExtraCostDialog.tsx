@@ -24,10 +24,10 @@ export const TotalExtraCostDialog = ({ mealData, isOpen, onCancel }: { mealData:
                 </DialogDescription>
             </DialogHeader>
             <div className="space-y-2 py-2 text-xs">
-                {mealData.extraExpenses.map((exp) => (
-                    <div key={exp.id} className="flex justify-between items-center p-2.5 rounded-lg border border-zinc-100 dark:border-zinc-800">
+                {mealData.extraExpenses.map((exp, index) => (
+                    <div key={index} className="flex justify-between items-center p-2.5 rounded-lg border border-zinc-100 dark:border-zinc-800">
                         <div>
-                            <div className="font-semibold text-zinc-800 dark:text-zinc-200">{exp.title}</div>
+                            <div className="font-semibold text-zinc-800 dark:text-zinc-200">{exp.billTitle}</div>
                             <div className="text-[10px] text-zinc-400">{exp.category}</div>
                         </div>
                         <span className="font-bold text-purple-600 dark:text-purple-400">৳{exp.amount.toLocaleString()}</span>

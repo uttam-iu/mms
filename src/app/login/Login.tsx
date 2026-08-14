@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import logoIcon from '../../../public/logo-white.png';
 import { useAppState } from '@/context/AppContext';
-import { setJwtToken } from "@/lib/localStorageHelper";
+import { setDataToLocalStorage, setJwtToken } from "@/lib/localStorageHelper";
 import { showToast } from "@/lib/utils";
 import axios from "axios";
 
@@ -41,8 +41,10 @@ export function LoginForm() {
       .then((res) => {
         setLoading(false);
         if (res?.data?.success) {
+          console.log(res?.data)
           ctx?.setUser(res?.data?.data?.user)
           setJwtToken(res?.data?.data?.token);
+          setDataToLocalStorage('userId', res?.data?.data?.user?.userId)
           document.cookie = `auth_token=${res?.data?.data?.token}; path=/`;
           document.cookie = `user=${res?.data?.data?.user?.userId}; path=/`;
           document.cookie = 'max-age=86400; SameSite=Strict; path=/';
@@ -88,7 +90,7 @@ export function LoginForm() {
                   type={showPassword ? "text" : "password"}
                   className="pl-10 pr-10"
                   required
-                  defaultValue={'12345'}
+                  defaultValue={'123456'}
                   placeholder="••••••••"
                 />
                 <button

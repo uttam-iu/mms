@@ -48,12 +48,13 @@ export interface BazarExpense {
 }
 
 export interface ExtraExpense {
-  id: string;
-  title: string;
+  billId?: string;
+  billTitle: string;
   category: 'Gas' | 'Electricity' | 'Water' | 'Internet' | 'Cook Salary' | 'Cleaner' | 'Others';
   amount: number;
-  splitType: 'equal' | 'custom';
   description?: string;
+  year:string;
+  month:string;
 }
 
 export interface MemberDeposit {

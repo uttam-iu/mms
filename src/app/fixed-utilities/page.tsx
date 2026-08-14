@@ -10,38 +10,21 @@ import { SummaryFilter } from '../../components/SummaryFilter';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { ExtraExpenseTable } from './ExtraExpenseTable';
 import { ExtraExpenseDialog } from './ExtraExpenseDialog';
+import { useSocket } from '@/hooks/useSocket';
 
-export default function MonthDetailPage() {
+export default function FixedCostPage() {
     const searchParams = useSearchParams();
 
-    const paramYear = searchParams.get('year') || 2026;
-    const paramMonth = searchParams.get('month') || 'january';
-    const [mealData, setMealData] = useState<MonthlyMealData>(() =>
-        generateMonthlyMealData(Number(paramYear), paramMonth)
-    );
-    const [isAddExtraOpen, setIsAddExtraOpen] = useState(false);
-    const [editingExtra, setEditingExtra] = useState<ExtraExpense | null>(null);
-    const [deleteTarget, setDeleteTarget] = useState<{
-        type: 'bazar' | 'extra' | 'meal';
-        idOrDate: string;
-        title?: string;
-    } | null>(null);
+    const paramYear = searchParams.get('year');
+    const paramMonth = searchParams.get('month');
 
-    useEffect(() => {
-        setMealData(generateMonthlyMealData(Number(paramYear), paramMonth));
-    }, [paramYear, paramMonth]);
+    const { data: monthwiseFixedCost, isLoading, refetch } = useSocket<{ data: { fixedCosts: ExtraExpense[], activeMembers: number } }>('emit', 'fixed_utility_cost', {
+        month: paramMonth,
+        year: paramYear,
+    });
 
-    const handleDeleteExtra = (targetDate: string) => {
-        console.log('df')
-        setDeleteTarget(null);
-    };
 
-    const handleSaveExtraSubmit = (expenseData: Omit<ExtraExpense, 'id'> & { id?: string }) => {
-        console.log('sdfsfs')
-        setIsAddExtraOpen(false);
-        setEditingExtra(null);
-    };
-
+    const [dialogProps, setDialogProps] = useState<{ type: 'ADD' | 'EDIT' | 'DELETE', row: ExtraExpense | null } | null>(null);
 
     const getTitle = useCallback(() => {
         const month = searchParams?.get('month') || '';
@@ -61,45 +44,51 @@ export default function MonthDetailPage() {
 
             <div className="max-w-7xl mx-auto px-2 pt-2 space-y-6 w-full min-w-0">
                 <ExtraExpenseTable
-                    mealData={mealData}
-                    setIsAddExtraOpen={() => {
-                        setEditingExtra(null);
-                        setIsAddExtraOpen(true);
-                    }}
-                    onEditExtra={(item) => {
-                        setEditingExtra(item);
-                        setIsAddExtraOpen(true);
-                    }}
-                    onDeleteExtra={(itemId) => {
-                        const item = mealData.extraExpenses.find((e) => e.id === itemId);
-                        setDeleteTarget({
-                            type: 'extra',
-                            idOrDate: itemId,
-                            title: `Delete Utility Bill (${item?.title || 'Bill'})`,
-                        });
-                    }}
+                    monthwiseFixedCostData={monthwiseFixedCost?.data?.fixedCosts || []}
+                    isLoading={isLoading}
+                    totalActiveMember={monthwiseFixedCost?.data?.activeMembers || 0}
+                    onAddExtra={() => setDialogProps({ type: 'ADD', row: null })}
+                    onEditExtra={(item) => setDialogProps({ type: 'EDIT', row: item })}
+                    onDeleteExtra={(item) => setDialogProps({ type: 'DELETE', row: item })}
                 />
             </div>
-            <DeleteConfirmDialog
-                isOpen={!!deleteTarget}
-                onClose={() => setDeleteTarget(null)}
-                onConfirm={() => {
-                    if (!deleteTarget) return;
-                    handleDeleteExtra(deleteTarget.idOrDate);
-                }}
-                title={deleteTarget?.title || 'Confirm Deletion'}
-                description="Are you sure you want to delete this item? This action will immediately recalculate all monthly totals and member balances."
-            />
+            {dialogProps?.type === 'DELETE' && <DeleteConfirmDialog
+                onCancel={() => setDialogProps(null)}
+                refetch={refetch}
+                title={'Confirmirmation'}
+                emitKey='delete_utility_cost'
+                payload={{ id: dialogProps?.row?.billId || '' }}
+                body={
+                    <div>
+                        <div className='flex gap-1'>
+                            <div className='text-sm w-[100px]'>Bill Title</div>
+                            <div className='text-sm text-muted-foreground'> : {dialogProps?.row?.billTitle}</div>
+                        </div>
+                        <div className='flex  gap-1'>
+                            <div className='text-sm w-[100px]'>Category</div>
+                            <div className='text-sm text-muted-foreground'> : {dialogProps?.row?.category}</div>
+                        </div>
+                        <div className='flex gap-1'>
+                            <div className='text-sm w-[100px]'>Amount</div>
+                            <div className='text-sm text-muted-foreground'> : {dialogProps?.row?.amount}</div>
+                        </div>
+                        <div className='flex gap-1'>
+                            <div className='text-sm w-[100px]'>Description</div>
+                            <div className='text-sm text-muted-foreground'> : {dialogProps?.row?.description}</div>
+                        </div>
+                    </div>
+                }
+                description={`This action will immediately recalculate all monthly totals. Are you sure you want to delete this item?`}
+            />}
 
-            <ExtraExpenseDialog
-                isOpen={isAddExtraOpen}
-                onClose={() => {
-                    setIsAddExtraOpen(false);
-                    setEditingExtra(null);
-                }}
-                onSubmit={handleSaveExtraSubmit}
-                editingExpense={editingExtra}
-            />
+            {(dialogProps?.type === 'EDIT' || dialogProps?.type === 'ADD') && <ExtraExpenseDialog
+                onCancel={() => setDialogProps(null)}
+                row={dialogProps?.row}
+                type={dialogProps?.type}
+                refetch={refetch}
+                year={paramYear || ''}
+                month={paramMonth || ''}
+            />}
 
         </div>
     );

@@ -8,7 +8,6 @@ import { DailyMealEntry, MonthlyMealData } from '@/types/meal.types';
 import { useTitle } from '@/hooks/useTitle';
 import { SummaryFilter } from '../../components/SummaryFilter';
 import { DatewiseSummaryTable } from './DatewiseSummaryTable';
-import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { MealEntryDialog } from './MealEntryDialog';
 
 export default function MonthDetailPage() {
@@ -82,7 +81,7 @@ export default function MonthDetailPage() {
                     }}
                 />
             </div>
-            <DeleteConfirmDialog
+            {/* <DeleteConfirmDialog
                 isOpen={!!deleteTarget}
                 onClose={() => setDeleteTarget(null)}
                 onConfirm={() => {
@@ -91,7 +90,7 @@ export default function MonthDetailPage() {
                 }}
                 title={deleteTarget?.title || 'Confirm Deletion'}
                 description="Are you sure you want to delete this item? This action will immediately recalculate all monthly totals and member balances."
-            />
+            /> */}
 
             <MealEntryDialog
                 isOpen={isAddMealOpen}

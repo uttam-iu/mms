@@ -7,7 +7,6 @@ import { generateMonthlyMealData } from '@/dummyData/mealData';
 import { BazarExpense, MonthlyMealData } from '@/types/meal.types';
 import { useTitle } from '@/hooks/useTitle';
 import { SummaryFilter } from '../../components/SummaryFilter';
-import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { BazarwiseExpenseSummaryTable } from './BazarExpenseSumaryTable';
 import { AddBazarExpenceDialog } from './AddBazarExpenceDialog';
 
@@ -91,7 +90,7 @@ export default function MonthDetailPage() {
                     }}
                 />
             </div>
-            <DeleteConfirmDialog
+            {/* <DeleteConfirmDialog
                 isOpen={!!deleteTarget}
                 onClose={() => setDeleteTarget(null)}
                 onConfirm={() => {
@@ -101,7 +100,7 @@ export default function MonthDetailPage() {
                 }}
                 title={deleteTarget?.title || 'Confirm Deletion'}
                 description="Are you sure you want to delete this item? This action will immediately recalculate all monthly totals and member balances."
-            />
+            /> */}
 
             <AddBazarExpenceDialog
                 isAddBazarOpen={isAddBazarOpen}

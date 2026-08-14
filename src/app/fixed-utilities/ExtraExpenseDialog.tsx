@@ -4,63 +4,82 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { ExtraExpense } from "@/types/meal.types";
 import { Receipt } from "lucide-react";
+import { getSocket } from '@/lib/socket';
+import { ApiResponse } from '@/types/user.types';
+import { showToast } from '@/lib/utils';
 
 interface ExtraExpenseDialogProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSubmit: (expense: Omit<ExtraExpense, 'id'> & { id?: string }) => void;
-    editingExpense?: ExtraExpense | null;
+    onCancel: () => void;
+    refetch: () => void;
+    row?: ExtraExpense | null;
+    type: 'EDIT' | 'ADD';
+    year: string;
+    month: string;
 }
 
 export const ExtraExpenseDialog: React.FC<ExtraExpenseDialogProps> = ({
-    isOpen,
-    onClose,
-    onSubmit,
-    editingExpense,
+    onCancel,
+    type,
+    row,
+    year,
+    month,
+    refetch
 }) => {
-    const [title, setTitle] = useState('');
-    const [category, setCategory] = useState<ExtraExpense['category']>('Utilities' as any);
-    const [amount, setAmount] = useState<string | number>('');
-    const [description, setDescription] = useState('');
+    const [loading, setLoading] = React.useState(false)
+
+    const [formData, setFormData] = React.useState({
+        billId: '',
+        billTitle: '',
+        category: 'Utilities' as any,
+        amount: '',
+        description: '',
+        year,
+        month
+    })
 
     useEffect(() => {
-        if (editingExpense) {
-            setTitle(editingExpense.title);
-            setCategory(editingExpense.category || 'Others');
-            setAmount(editingExpense.amount);
-            setDescription(editingExpense.description || '');
-        } else {
-            setTitle('');
-            setCategory('Gas');
-            setAmount('');
-            setDescription('');
+        if (row) {
+            setFormData((prev) => ({
+                ...prev,
+                billId: row?.billId || '',
+                billTitle: row?.billTitle || '',
+                category: row.category,
+                amount: row.amount.toString(),
+                description: row.description ?? '',
+                year: row?.year,
+                month: row?.month,
+            }));
         }
-    }, [editingExpense, isOpen]);
+    }, [row]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const numAmount = parseFloat(String(amount));
-        if (!title.trim() || isNaN(numAmount) || numAmount <= 0) return;
+        const numAmount = parseFloat(String(formData.amount));
+        if (!formData?.billTitle.trim() || isNaN(numAmount) || numAmount <= 0) return;
 
-        onSubmit({
-            ...(editingExpense ? { id: editingExpense.id } : {}),
-            title: title.trim(),
-            category,
-            amount: numAmount,
-            splitType: 'equal',
-            description: description.trim(),
-        });
-        onClose();
+        const socket = getSocket()
+        setLoading(true)
+        socket?.emit('fixed_utility_cost_create', { ...formData, amount: parseFloat(formData.amount) || 0 }, (res: ApiResponse<ExtraExpense>) => {
+            if (res?.success) {
+                showToast(res?.message, 'success')
+                setLoading(false)
+                refetch()
+                onCancel()
+            } else {
+                showToast(res?.message, 'error')
+                setLoading(false)
+            }
+        })
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <Dialog open={true} >
             <DialogContent className="sm:max-w-[420px]">
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle className="text-sm font-bold flex items-center gap-2">
                             <Receipt className="text-purple-600" size={16} />
-                            {editingExpense ? 'Edit Fixed Utility / Bill' : 'Add Fixed Utility / Bill'}
+                            {row ? 'Edit Fixed Utility / Bill' : 'Add Fixed Utility / Bill'}
                         </DialogTitle>
                     </DialogHeader>
 
@@ -71,8 +90,13 @@ export const ExtraExpenseDialog: React.FC<ExtraExpenseDialogProps> = ({
                             </label>
                             <Input
                                 placeholder="e.g. Cook Salary, Gas Bill, Internet"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                value={formData?.billTitle}
+                                onChange={(e) => setFormData(prev => {
+                                    return {
+                                        ...prev,
+                                        billTitle: e.target.value
+                                    }
+                                })}
                                 className="h-8 text-xs"
                                 required
                             />
@@ -83,8 +107,13 @@ export const ExtraExpenseDialog: React.FC<ExtraExpenseDialogProps> = ({
                                 Category
                             </label>
                             <select
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value as ExtraExpense['category'])}
+                                value={formData?.category}
+                                onChange={(e) => setFormData(prev => {
+                                    return {
+                                        ...prev,
+                                        category: e.target.value as ExtraExpense['category']
+                                    }
+                                })}
                                 className="w-full h-8 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 text-xs"
                             >
                                 <option value="Gas">Gas</option>
@@ -104,8 +133,13 @@ export const ExtraExpenseDialog: React.FC<ExtraExpenseDialogProps> = ({
                             <Input
                                 type="number"
                                 placeholder="e.g. 4500"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
+                                value={formData?.amount}
+                                onChange={(e) => setFormData(prev => {
+                                    return {
+                                        ...prev,
+                                        amount: e.target.value
+                                    }
+                                })}
                                 className="h-8 text-xs"
                                 required
                             />
@@ -117,19 +151,24 @@ export const ExtraExpenseDialog: React.FC<ExtraExpenseDialogProps> = ({
                             </label>
                             <Input
                                 placeholder="e.g. Divided equally among active members"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
+                                value={formData?.description}
+                                onChange={(e) => setFormData(prev => {
+                                    return {
+                                        ...prev,
+                                        description: e.target.value
+                                    }
+                                })}
                                 className="h-8 text-xs"
                             />
                         </div>
                     </div>
 
                     <DialogFooter>
-                        <Button type="button" variant="outline" size="sm" onClick={onClose}>
+                        <Button type="button" variant="outline" size="sm" onClick={onCancel}>
                             Cancel
                         </Button>
-                        <Button type="submit" size="sm" className="bg-purple-700 hover:bg-purple-800 text-white">
-                            {editingExpense ? 'Save Changes' : 'Add Bill'}
+                        <Button type="submit" size="sm" className="bg-teal-700 hover:bg-teal-800 text-white">
+                            {row ? `${loading ? 'Updating...' : 'Save Changes'}` : `${loading ? 'Creating...' : 'Add Bill'}`}
                         </Button>
                     </DialogFooter>
                 </form>

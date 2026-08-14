@@ -24,13 +24,7 @@ export function generateMonthlyMealData(year: number, monthId: string): MonthlyM
   const seedBase = `${year}-${monthObj.value}`;
 
   // 1. Generate Fixed / Shared Extra Expenses
-  const extraExpenses: ExtraExpense[] = [
-    { id: `ext-1-${seedBase}`, title: "House Cook Salary", category: "Cook Salary", amount: 4500, splitType: "equal", description: "Monthly cook fee split among 5 members" },
-    { id: `ext-2-${seedBase}`, title: "Gas & Utility Bill", category: "Gas", amount: 1500, splitType: "equal", description: "Cylinder gas & burner maintenance" },
-    { id: `ext-3-${seedBase}`, title: "High Speed Fiber WiFi", category: "Internet", amount: 1000, splitType: "equal", description: "Shared broadband bill" },
-    { id: `ext-4-${seedBase}`, title: "Water & Waste Management", category: "Water", amount: 500, splitType: "equal", description: "Monthly water jar & waste collection" },
-    { id: `ext-5-${seedBase}`, title: "Flat Cleaning Supplies", category: "Cleaner", amount: 400, splitType: "equal", description: "Floor cleaner, soap, trash bags" },
-  ];
+  const extraExpenses: ExtraExpense[] = [];
 
   const totalExtraCost = extraExpenses.reduce((sum, item) => sum + item.amount, 0);
 
