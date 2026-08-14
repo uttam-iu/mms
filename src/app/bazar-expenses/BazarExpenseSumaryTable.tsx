@@ -95,7 +95,7 @@ export const BazarwiseExpenseSummaryTable = ({
                     </tbody>
                     <tfoot className="bg-zinc-100 dark:bg-zinc-800 font-bold border-t-2 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100">
                         <tr>
-                            <td colSpan={5} className="p-1">TOTAL BAZAR EXPENSES</td>
+                            <td colSpan={5} className="p-1">Sepenses</td>
                             <td className="p-1 text-right text-teal-700 dark:text-teal-400 text-base font-extrabold">
                                 ৳{mealData.totalBazarCost.toLocaleString()}
                             </td>

@@ -43,20 +43,24 @@ export default async function RootLayout({
       lang="en"
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", raleway.variable)}
     >
-      <body className="min-h-full flex flex-col overflow-hidden">
+      <body className="h-full flex flex-col overflow-hidden">
         <AppProvider>
-          {isLoggedIn ?
-            <SidebarProvider>
+          {isLoggedIn ? (
+            <SidebarProvider className="h-full overflow-hidden">
               <AppSidebar />
-              <main className="flex-1 min-w-0 w-full overflow-x-hidden">
-                <SidebarTrigger />
-                <div id='main-content' className="overflow-auto p-1 min-w-0" style={{ height: `calc(100vh - 48px)` }}>
+              <main className="flex flex-col flex-1 h-full min-w-0 w-full overflow-hidden">
+                <div className="flex items-center gap-2 px-2 py-1 shrink-0 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                  <SidebarTrigger />
+                </div>
+                <div id="main-content" className="flex-1 overflow-y-auto min-w-0">
                   {children}
                 </div>
               </main>
               <FloatingChatWindow />
             </SidebarProvider>
-            : <div className="min-h-screen bg-background">{children}</div>}
+          ) : (
+            <div className="min-h-screen bg-background">{children}</div>
+          )}
           <ToastContainer position="bottom-center" />
         </AppProvider>
       </body>

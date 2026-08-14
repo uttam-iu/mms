@@ -102,7 +102,7 @@ export const PersonwiseSummaryTable = ({ mealData }: { mealData: MonthlyMealData
                 <tfoot className="bg-zinc-100 dark:bg-zinc-800 font-bold border-t-2 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100">
                     <tr>
                         <td className="p-1"></td>
-                        <td className="p-1">TOTAL HOUSE SUMMARY</td>
+                        <td className="p-1">Summary</td>
                         <td className="p-1 text-center text-amber-700 dark:text-amber-400">{mealData.totalMeals} meals</td>
                         <td className="p-1 text-right">৳{mealData.totalBazarCost.toLocaleString()}</td>
                         <td className="p-1 text-right">৳{mealData.totalExtraCost.toLocaleString()}</td>

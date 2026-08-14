@@ -97,7 +97,7 @@ export const ExtraExpenseTable = ({
                         </tbody>
                         <tfoot className="bg-zinc-100 dark:bg-zinc-800 font-bold border-t-2 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100">
                             <tr>
-                                <td colSpan={4} className="p-1">TOTAL FIXED EXTRA BILLS</td>
+                                <td colSpan={4} className="p-1">Summary</td>
                                 <td className="p-1 text-right text-purple-600 dark:text-purple-400 text-base font-extrabold">
                                     ৳{_.sumBy(monthwiseFixedCostData, 'amount')}
                                 </td>

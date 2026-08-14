@@ -35,7 +35,7 @@ export const DatewiseSummaryTable = ({
                 )}
             </div>
 
-            <div className="overflow-x-auto max-h-[550px] custom-scrollbar">
+            <div className="overflow-x-auto custom-scrollbar">
                 <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold sticky top-0 z-10">
                         <tr>
