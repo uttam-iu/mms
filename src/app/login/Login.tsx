@@ -90,7 +90,7 @@ export function LoginForm() {
                   type={showPassword ? "text" : "password"}
                   className="pl-10 pr-10"
                   required
-                  defaultValue={'123456'}
+                  defaultValue={''}
                   placeholder="••••••••"
                 />
                 <button

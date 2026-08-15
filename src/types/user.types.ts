@@ -18,6 +18,8 @@ export interface USER_TYPE {
   individualCosts?: IndividualCostItem[];
   emergencyContact?: string;
   address?: string;
+  label?: string;
+  value?: string;
 }
 
 export interface ApiResponse<T = unknown> {

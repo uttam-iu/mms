@@ -24,7 +24,7 @@ export const TotalExtraCostDialog = ({ mealData, isOpen, onCancel }: { mealData:
                 </DialogDescription>
             </DialogHeader>
             <div className="space-y-2 py-2 text-xs">
-                {mealData.extraExpenses.map((exp, index) => (
+                {/* {mealData.extraExpenses.map((exp, index) => (
                     <div key={index} className="flex justify-between items-center p-2.5 rounded-lg border border-zinc-100 dark:border-zinc-800">
                         <div>
                             <div className="font-semibold text-zinc-800 dark:text-zinc-200">{exp.billTitle}</div>
@@ -32,10 +32,10 @@ export const TotalExtraCostDialog = ({ mealData, isOpen, onCancel }: { mealData:
                         </div>
                         <span className="font-bold text-purple-600 dark:text-purple-400">৳{exp.amount.toLocaleString()}</span>
                     </div>
-                ))}
+                ))} */}
                 <div className="p-3 rounded-lg bg-purple-50 dark:bg-purple-950/40 font-bold flex justify-between">
                     <span>Per Member Equal Share</span>
-                    <span className="text-purple-600 dark:text-purple-400">৳{(mealData.totalExtraCost / (mealData.activeMembers.length || 1)).toFixed(2)}</span>
+                    {/* <span className="text-purple-600 dark:text-purple-400">৳{(mealData.totalExtraCost / (mealData.activeMembers.length || 1)).toFixed(2)}</span> */}
                 </div>
             </div>
             <DialogFooter>

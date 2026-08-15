@@ -21,8 +21,6 @@ export default function MonthDetailPage() {
     const year = searchParams.get('year');
     const month = searchParams.get('month') || '';
 
-    const [dialogProps, setDialogProps] = useState<{ type: string, row: DailyMealEntry | null } | null>(null);
-
     const { data: dailyMealEntriesResp, isLoading, refetch } = useSocket<{ data: DailyMealEntriesRespType }>('emit', 'meal_matrix', {
         month,
         year,
@@ -46,7 +44,7 @@ export default function MonthDetailPage() {
                 <DatewiseSummaryTable
                     dailyMealEntries={dailyMealEntriesResp?.data?.dailyMealEntries || []}
                     isLoading={isLoading}
-                    onUpdate={(row) => setDialogProps({ type: 'EDIT', row })}
+                    refetch={refetch}
                     memberMeta={dailyMealEntriesResp?.data?.memberMeta || []}
                 />
             </div>

@@ -3,8 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { generateMonthlyMealData } from '@/dummyData/mealData';
-import { MonthlyMealData } from '@/types/meal.types';
+import { MemberWiseSummary, MonthlyMealData } from '@/types/meal.types';
 import { useTitle } from '@/hooks/useTitle';
 import { SummaryFilter } from '../../components/SummaryFilter';
 import { SummaryCard } from './SummaryCard';
@@ -16,19 +15,26 @@ import { BazarCostDialog } from './BazarCostDialog';
 import { NetBalanceDialog } from './NetBalanceDialog';
 import { PersonwiseSummaryTable } from './PersonwiseSummaryTable';
 import { initcap } from '@/lib/utils';
+import { useSocket } from '@/hooks/useSocket';
+
+interface MonthlySummaryRespType {
+    summary: MonthlyMealData;
+    memberWiseSummary: MemberWiseSummary[] | [];
+    month: string;
+    year: string;
+}
 
 export default function MonthDetailPage() {
     const searchParams = useSearchParams();
 
-    const year = searchParams?.get('year');
-    const month = searchParams?.get('month') || '';
-    const [mealData, setMealData] = useState<MonthlyMealData>(() =>
-        generateMonthlyMealData(Number(year), month)
-    );
+    const year = searchParams.get('year');
+    const month = searchParams.get('month') || '';
 
-    useEffect(() => {
-        setMealData(generateMonthlyMealData(Number(year), month));
-    }, [year, month]);
+    const { data: monthlySummaryResp, isLoading, refetch } = useSocket<{ data: MonthlySummaryRespType }>('emit', 'monthly_summary', {
+        month,
+        year,
+    });
+    console.log(monthlySummaryResp)
 
     const [activeCardDialog, setActiveCardDialog] = useState<
         'totalCost' | 'totalMeal' | 'mealRate' | 'totalExtra' | 'bazarCost' | 'deposits' | 'netBalance' | null
@@ -50,17 +56,17 @@ export default function MonthDetailPage() {
 
             <div className="max-w-7xl mx-auto px-2 pt-2 space-y-6 w-full min-w-0">
                 <div>
-                    <SummaryCard mealData={mealData} setActiveCardDialog={setActiveCardDialog} />
+                    <SummaryCard isLoading={isLoading} summary={monthlySummaryResp?.data?.summary} setActiveCardDialog={setActiveCardDialog} />
                 </div>
-                <PersonwiseSummaryTable mealData={mealData} />
+                <PersonwiseSummaryTable isLoading={isLoading} mealRate={monthlySummaryResp?.data?.summary?.mealRate || 0} memberWiseSummary={monthlySummaryResp?.data?.memberWiseSummary || []} />
             </div>
 
-            <TotalCostDialog mealData={mealData} isOpen={activeCardDialog === 'totalCost'} onCancel={() => setActiveCardDialog(null)} />
+            {/* <TotalCostDialog mealData={mealData} isOpen={activeCardDialog === 'totalCost'} onCancel={() => setActiveCardDialog(null)} />
             <TotalMealDialog mealData={mealData} isOpen={activeCardDialog === 'totalMeal'} onCancel={() => setActiveCardDialog(null)} />
             <CuttentMealRateDialog mealData={mealData} isOpen={activeCardDialog === 'mealRate'} onCancel={() => setActiveCardDialog(null)} />
             <TotalExtraCostDialog mealData={mealData} isOpen={activeCardDialog === 'totalExtra'} onCancel={() => setActiveCardDialog(null)} />
             <BazarCostDialog mealData={mealData} isOpen={activeCardDialog === 'bazarCost'} onCancel={() => setActiveCardDialog(null)} />
-            <NetBalanceDialog mealData={mealData} isOpen={activeCardDialog === 'netBalance'} onCancel={() => setActiveCardDialog(null)} />
+            <NetBalanceDialog mealData={mealData} isOpen={activeCardDialog === 'netBalance'} onCancel={() => setActiveCardDialog(null)} /> */}
 
         </div>
     );

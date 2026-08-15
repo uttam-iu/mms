@@ -19,9 +19,9 @@ export const TotalCostDialog = ({ mealData, isOpen, onCancel }: { mealData: Mont
                 <DialogTitle className="flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
                     <DollarSign className="text-teal-600" size={20} /> Total House Cost Breakdown
                 </DialogTitle>
-                <DialogDescription className="text-xs">
+                {/* <DialogDescription className="text-xs">
                     Complete cost breakdown for {mealData.monthName} {mealData.year}.
-                </DialogDescription>
+                </DialogDescription> */}
             </DialogHeader>
             <div className="space-y-4 py-2 text-xs">
                 <div className="p-4 rounded-xl bg-teal-50/60 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 flex items-center justify-between">

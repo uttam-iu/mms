@@ -13,7 +13,7 @@ export const BazarCostDialog = ({ mealData, isOpen, onCancel }: { mealData: Mont
                 </DialogTitle>
             </DialogHeader>
             <div className="space-y-2 py-2 text-xs max-h-60 overflow-y-auto">
-                {mealData.bazarExpenses.map((b) => (
+                {/* {mealData.bazarExpenses.map((b) => (
                     <div key={b.id} className="p-2 rounded-lg border border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                         <div>
                             <div className="font-semibold text-zinc-800 dark:text-zinc-200">{b.shopperName} ({b.date})</div>
@@ -21,7 +21,7 @@ export const BazarCostDialog = ({ mealData, isOpen, onCancel }: { mealData: Mont
                         </div>
                         <span className="font-bold text-blue-600 dark:text-blue-400">৳{b.amount.toLocaleString()}</span>
                     </div>
-                ))}
+                ))} */}
             </div>
             <DialogFooter>
                 <Button size="sm" onClick={onCancel}>Close</Button>

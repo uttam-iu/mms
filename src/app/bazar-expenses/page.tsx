@@ -1,10 +1,9 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { generateMonthlyMealData } from '@/dummyData/mealData';
-import { BazarExpense, MonthlyMealData } from '@/types/meal.types';
+import { BazarExpense } from '@/types/meal.types';
 import { useTitle } from '@/hooks/useTitle';
 import { SummaryFilter } from '../../components/SummaryFilter';
 import { BazarwiseExpenseSummaryTable } from './BazarExpenseSumaryTable';

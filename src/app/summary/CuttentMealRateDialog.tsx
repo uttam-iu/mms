@@ -19,9 +19,9 @@ export const CuttentMealRateDialog = ({ mealData, isOpen, onCancel }: { mealData
                 <DialogTitle className="flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
                     <TrendingUp className="text-emerald-600" size={20} /> Meal Rate Calculation Formula
                 </DialogTitle>
-                <DialogDescription className="text-xs">
+                {/* <DialogDescription className="text-xs">
                     Mathematical calculation of the meal rate for {mealData.monthName} {mealData.year}.
-                </DialogDescription>
+                </DialogDescription> */}
             </DialogHeader>
             <div className="space-y-4 py-2 text-xs">
                 <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 font-mono text-center">

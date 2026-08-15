@@ -80,6 +80,9 @@ export const setupSocket = (): Socket => {
 
   socket.on('connect_error', (err) => {
     console.warn('[Socket.IO] Connection Error:', err.message);
+    setTimeout(()=>{
+      socket?.connect()
+    }, 2000)
   });
 
   socket.on('disconnect', (reason) => {

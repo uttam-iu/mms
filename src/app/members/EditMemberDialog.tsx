@@ -102,6 +102,7 @@ export const EditMemberDialog = ({ row, type, onCancel, refetch }: { row: USER_T
                         <div>
                             <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Status</label>
                             <select
+                                disabled={type === 'EDIT'}
                                 value={formData?.status}
                                 onChange={(e) => setFormData({ ...formData, status: e.target.value as 'active' | 'inactive' })}
                                 className="w-full h-8 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 text-xs"

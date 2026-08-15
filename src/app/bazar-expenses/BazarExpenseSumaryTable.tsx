@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { MonthlyMealData, BazarExpense } from "@/types/meal.types"
+import { BazarExpense } from "@/types/meal.types"
 import { Plus, Pencil, Trash2 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import _ from "lodash";

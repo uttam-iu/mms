@@ -20,9 +20,9 @@ export const TotalMealDialog = ({ mealData, isOpen, onCancel }: { mealData: Mont
                 <DialogTitle className="flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
                     <Utensils className="text-amber-600" size={20} /> Total Meals Consumed Breakdown
                 </DialogTitle>
-                <DialogDescription className="text-xs">
+                {/* <DialogDescription className="text-xs">
                     Meal distribution per member in {mealData.monthName} {mealData.year}.
-                </DialogDescription>
+                </DialogDescription> */}
             </DialogHeader>
             <div className="space-y-3 py-2 text-xs">
                 <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-center">
@@ -30,7 +30,7 @@ export const TotalMealDialog = ({ mealData, isOpen, onCancel }: { mealData: Mont
                     <div className="text-2xl font-black text-amber-600 dark:text-amber-400">{mealData.totalMeals} Meals</div>
                 </div>
                 <div className="space-y-1.5 max-h-60 overflow-y-auto">
-                    {mealData.activeMembers.map((m) => (
+                    {/* {mealData.activeMembers.map((m) => (
                         <div key={m.userId} className="flex items-center justify-between p-2 rounded-lg border border-zinc-100 dark:border-zinc-800">
                             <div className="flex items-center gap-2">
                                 <Avatar className="h-6 w-6">
@@ -41,7 +41,7 @@ export const TotalMealDialog = ({ mealData, isOpen, onCancel }: { mealData: Mont
                             </div>
                             <span className="font-bold text-amber-600 dark:text-amber-400">{m.totalMeals} meals</span>
                         </div>
-                    ))}
+                    ))} */}
                 </div>
             </div>
             <DialogFooter>

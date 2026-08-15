@@ -1,16 +1,22 @@
+import { initcap } from "@/lib/utils";
 import { MonthlyMealData } from "@/types/meal.types"
 import { ArrowDownRight, ArrowUpRight, DollarSign, PiggyBank, Receipt, ShoppingBag, TrendingUp, Users, Utensils, Wallet } from "lucide-react"
+import { useSearchParams } from "next/navigation";
 
-export const SummaryCard = ({ mealData, setActiveCardDialog }: { mealData: MonthlyMealData, setActiveCardDialog: (dialog: 'totalCost' | 'totalMeal' | 'mealRate' | 'totalExtra' | 'bazarCost' | 'deposits' | 'netBalance') => void }) => {
+export const SummaryCard = ({ summary, setActiveCardDialog, isLoading }: { isLoading: boolean, summary?: MonthlyMealData, setActiveCardDialog: (dialog: 'totalCost' | 'totalMeal' | 'mealRate' | 'totalExtra' | 'bazarCost' | 'deposits' | 'netBalance') => void }) => {
+    const searchParams = useSearchParams();
+
+    const year = searchParams.get('year');
+    const month = searchParams.get('month') || '';
 
     const SUMMARY_CARD_DATA = [
         {
             title: 'Total House Cost',
             icon: <DollarSign size={16} />,
             bgIcon: <DollarSign size={54} className="text-teal-600 dark:text-teal-400" />,
-            value: `৳${mealData.totalGrossCost.toLocaleString()}`,
-            footerleft: <span>Bazar: ৳{mealData.totalBazarCost.toLocaleString()}</span>,
-            footerRight: <span>Extra: ৳{mealData.totalExtraCost.toLocaleString()}</span>,
+            value: `৳${summary?.totalGrossCost?.toLocaleString() || '0'}`,
+            footerleft: <span>Bazar: ৳{summary?.totalBazarCost?.toLocaleString() || '0'}</span>,
+            footerRight: <span>Extra: ৳{summary?.totalExtraCost?.toLocaleString() || '0'}</span>,
             iconBgColor: 'bg-teal-50 dark:bg-teal-950/60',
             iconColor: 'text-teal-700 dark:text-teal-400',
             onClick: () => setActiveCardDialog('totalCost'),
@@ -23,9 +29,9 @@ export const SummaryCard = ({ mealData, setActiveCardDialog }: { mealData: Month
             icon: <Utensils size={16} />,
             iconBgColor: 'bg-amber-50 dark:bg-amber-950/60',
             iconColor: 'text-amber-700 dark:text-amber-400',
-            value: <div>{mealData.totalMeals} <span className="text-xs font-normal text-zinc-500">meals</span></div>,
-            footerleft: <span>{mealData.activeMembers.length} Active Members</span>,
-            footerRight: <span>Avg: {(mealData.totalMeals / (mealData.activeMembers.length || 1)).toFixed(1)} / user</span>,
+            value: <div>{summary?.totalMeals || '0'} <span className="text-xs font-normal text-zinc-500">meals</span></div>,
+            footerleft: <span>{summary?.mealMembers || '0'} Active Members</span>,
+            footerRight: <span>Avg: {(summary?.totalMeals || 0 / (summary?.mealMembers || 1)).toFixed(1)} / user</span>,
             hoverBorderColor: 'hover:border-amber-500 dark:hover:border-amber-500',
         },
         {
@@ -35,7 +41,7 @@ export const SummaryCard = ({ mealData, setActiveCardDialog }: { mealData: Month
             icon: <TrendingUp size={16} />,
             iconBgColor: 'bg-emerald-50 dark:bg-emerald-950/60',
             iconColor: 'text-emerald-700 dark:text-emerald-400',
-            value: <div>৳{mealData.mealRate} <span className="text-xs font-normal text-zinc-500">/ meal</span></div>,
+            value: <div>৳{summary?.mealRate?.toFixed(2) || '0'} <span className="text-xs font-normal text-zinc-500">/ meal</span></div>,
             footerleft: <span>Formula: Bazar ÷ Meals</span>,
             // footerRight: <span className="text-teal-600 dark:text-teal-400 font-medium">View Breakdown &rarr;</span>,
             hoverBorderColor: 'hover:border-emerald-500 dark:hover:border-emerald-500',
@@ -47,9 +53,9 @@ export const SummaryCard = ({ mealData, setActiveCardDialog }: { mealData: Month
             icon: <Receipt size={16} />,
             iconBgColor: 'bg-purple-50 dark:bg-purple-950/60',
             iconColor: 'text-purple-700 dark:text-purple-400',
-            value: <div>৳{mealData.totalExtraCost.toLocaleString()}</div>,
-            footerleft: <span>Per Head: ৳{(mealData.totalExtraCost / (mealData.activeMembers.length || 1)).toFixed(0)}</span>,
-            footerRight: <span>{mealData.extraExpenses.length} Items</span>,
+            value: <div>৳{summary?.totalExtraCost?.toLocaleString() || '0'}</div>,
+            footerleft: <span>Per Head: ৳{(summary?.totalExtraCost || 0 / (summary?.mealMembers || 1)).toFixed(0)}</span>,
+            // footerRight: <span>{mealData.extraExpenses.length} Items</span>,
             hoverBorderColor: 'hover:border-purple-500 dark:hover:border-purple-500',
         },
 
@@ -94,10 +100,10 @@ export const SummaryCard = ({ mealData, setActiveCardDialog }: { mealData: Month
                 </span>
             </div>
             <div className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                ৳{mealData.totalBazarCost.toLocaleString()}
+                ৳{summary?.totalBazarCost?.toLocaleString() || '0'}
             </div>
             <p className="text-[11px] text-zinc-500 mt-1">
-                {mealData.bazarExpenses.length} shopping entries in {mealData.monthName}
+                {summary?.baxarExpensesBreakdown?.length} shopping entries in {initcap(month)}-{year}
             </p>
         </div>
 
@@ -113,7 +119,7 @@ export const SummaryCard = ({ mealData, setActiveCardDialog }: { mealData: Month
                 </span>
             </div>
             <div className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                ৳{mealData.totalDeposits.toLocaleString()}
+                ৳{summary?.totalDeposits?.toLocaleString() || '0'}
             </div>
             <p className="text-[11px] text-zinc-500 mt-1">
                 Total advance money deposited by members
@@ -123,7 +129,7 @@ export const SummaryCard = ({ mealData, setActiveCardDialog }: { mealData: Month
         {/* Card 7: Net Balance */}
         <div
             onClick={() => setActiveCardDialog('netBalance')}
-            className={`group bg-white dark:bg-zinc-900 rounded-xl p-4 border shadow-2xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden ${mealData.netBalance >= 0
+            className={`group bg-white dark:bg-zinc-900 rounded-xl p-4 border shadow-2xs hover:shadow-md transition-all cursor-pointer relative overflow-hidden ${(summary?.cashInHand ?? 0) >= 0
                 ? 'border-emerald-200 dark:border-emerald-800/80 hover:border-emerald-500'
                 : 'border-rose-200 dark:border-rose-800/80 hover:border-rose-500'
                 }`}
@@ -131,7 +137,7 @@ export const SummaryCard = ({ mealData, setActiveCardDialog }: { mealData: Month
             <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">House Cash Balance</span>
                 <span
-                    className={`p-1.5 rounded-lg ${mealData.netBalance >= 0
+                    className={`p-1.5 rounded-lg ${(summary?.cashInHand ?? 0) >= 0
                         ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400'
                         : 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400'
                         }`}
@@ -140,14 +146,14 @@ export const SummaryCard = ({ mealData, setActiveCardDialog }: { mealData: Month
                 </span>
             </div>
             <div
-                className={`text-xl font-bold flex items-center gap-1 ${mealData.netBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                className={`text-xl font-bold flex items-center gap-1 ${(summary?.cashInHand ?? 0) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                     }`}
             >
-                {mealData.netBalance >= 0 ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
-                ৳{Math.abs(mealData.netBalance).toLocaleString()}
+                {(summary?.cashInHand ?? 0) >= 0 ? <ArrowUpRight size={18} /> : <ArrowDownRight size={18} />}
+                ৳{Math.abs(summary?.cashInHand ?? 0).toLocaleString()}
             </div>
             <p className="text-[11px] text-zinc-500 mt-1">
-                {mealData.netBalance >= 0 ? 'Surplus Cash in Fund' : 'Deficit / Pending Payments'}
+                {(summary?.cashInHand ?? 0) >= 0 ? 'Surplus Cash in Fund' : 'Deficit / Pending Payments'}
             </p>
         </div>
 
@@ -157,10 +163,10 @@ export const SummaryCard = ({ mealData, setActiveCardDialog }: { mealData: Month
                 <div className="flex items-center gap-1.5 text-xs font-medium text-teal-200">
                     <Users size={14} /> Active House Members
                 </div>
-                <div className="text-2xl font-black mt-1">{mealData.activeMembers.length} Members</div>
+                <div className="text-2xl font-black mt-1">{summary?.mealMembers || '0'} Members</div>
             </div>
             <div className="flex items-center justify-between text-xs text-teal-100 border-t border-teal-600/60 pt-2 mt-2">
-                <span>{mealData.monthName} Status</span>
+                <span>{initcap(month)}-{year} Status</span>
                 <span className="font-semibold px-2 py-0.5 rounded bg-teal-800 text-teal-100 text-[10px]">
                     Active Month
                 </span>

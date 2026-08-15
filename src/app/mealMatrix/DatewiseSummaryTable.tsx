@@ -2,19 +2,29 @@ import React, { useState } from "react";
 import Loader from "@/components/Loader";
 import { DailyMealEntry } from "@/types/meal.types";
 import { Pencil, Check, X } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { getSocket } from "@/lib/socket";
+import { showToast } from "@/lib/utils";
+import { ApiResponse } from "@/types/user.types";
 
 export const DatewiseSummaryTable = ({
     dailyMealEntries,
-    onUpdate,
+    refetch,
     isLoading,
     memberMeta
 }: {
     dailyMealEntries: DailyMealEntry[];
-    onUpdate: (item: DailyMealEntry) => void;
+    refetch: () => void;
     isLoading: boolean;
     memberMeta: { label: string, value: string }[] | []
 }) => {
+    const searchParams = useSearchParams();
+
+    const year = searchParams.get('year');
+    const month = searchParams.get('month') || '';
+
     const [editingDate, setEditingDate] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false)
     const [editValues, setEditValues] = useState<{ [userId: string]: string | number }>({});
 
     const handleStartEdit = (daily: DailyMealEntry) => {
@@ -40,21 +50,28 @@ export const DatewiseSummaryTable = ({
             userIdWiseMeals[m.value] = numVal;
         });
 
-        console.log('Saved Meal Matrix (userId wise):', {
+        const formData = {
             date: daily.date,
-            userMeals: userIdWiseMeals,
-            rawInputs: editValues
-        });
-
-        if (onUpdate) {
-            onUpdate({
-                ...daily,
-                memberMeals: userIdWiseMeals
-            });
+            memberMeals: userIdWiseMeals,
+            month,
+            year
         }
+        const socket = getSocket()
+        setLoading(true)
+        socket?.emit('meal_matrix_update', formData, (res: ApiResponse<DailyMealEntry>) => {
+            if (res?.success) {
+                showToast(res?.message, 'success')
+                setLoading(false)
+                refetch()
+                setEditValues({});
+                setEditingDate(null);
+            } else {
+                showToast(res?.message, 'error')
+                setLoading(false)
+            }
+        })
 
-        setEditingDate(null);
-        setEditValues({});
+
     };
 
     return (
@@ -80,10 +97,16 @@ export const DatewiseSummaryTable = ({
                             {memberMeta.map((m) => (
                                 <th key={m.value} className="p-1 border-b border-zinc-200 dark:border-zinc-700 text-center min-w-[120px]">
                                     <div className="font-bold text-zinc-900 dark:text-zinc-100">{m.label}</div>
+                                    <div key={m.value} className="text-center text-amber-600 dark:text-amber-400 font-extrabold text-sm">
+                                        ({dailyMealEntries?.reduce((sum, d) => sum + (d.memberMeals?.[m.value] || 0), 0)})
+                                    </div>
                                 </th>
                             ))}
                             <th className="p-1 border-b border-zinc-200 dark:border-zinc-700 text-center font-bold text-teal-700 dark:text-teal-400 min-w-[100px]">
                                 Daily Total
+                                <div className="text-center text-teal-700 dark:text-teal-300 font-black text-sm">
+                                    ({dailyMealEntries?.reduce((sum, d) => sum + (d.dailyTotalMeals || 0), 0)})
+                                </div>
                             </th>
                             <th className="p-1 border-b border-zinc-200 dark:border-zinc-700 text-center font-bold min-w-[80px]">
                                 Actions
@@ -159,6 +182,7 @@ export const DatewiseSummaryTable = ({
                                                             onClick={() => handleSaveEdit(daily)}
                                                             className="p-1 rounded bg-teal-600 hover:bg-teal-700 text-white cursor-pointer transition-colors shadow-xs"
                                                             title="Save Meal Entry"
+                                                            disabled={loading}
                                                         >
                                                             <Check size={14} />
                                                         </button>
@@ -167,6 +191,7 @@ export const DatewiseSummaryTable = ({
                                                             onClick={handleCancelEdit}
                                                             className="p-1 rounded text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
                                                             title="Cancel Edit"
+                                                            disabled={loading}
                                                         >
                                                             <X size={14} />
                                                         </button>

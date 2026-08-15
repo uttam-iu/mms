@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { MonthlyMealData, DailyMealEntry } from "@/types/meal.types";
+import { DailyMealEntry } from "@/types/meal.types";
 import { Calendar } from "lucide-react";
-import { showToast } from '@/lib/utils';
-import { getSocket } from '@/lib/socket';
-import { ApiResponse } from '@/types/user.types';
 
 interface MealEntryDialogProps {
     onCancel: () => void;

@@ -24,9 +24,9 @@ export const NetBalanceDialog = ({ mealData, isOpen, onCancel }: { mealData: Mon
                     </div>
                     <div className="border-t border-zinc-200 dark:border-zinc-700 pt-1 flex justify-between font-bold text-sm">
                         <span>Net House Surplus / Balance:</span>
-                        <span className={mealData.netBalance >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
+                        {/* <span className={mealData.netBalance >= 0 ? 'text-emerald-600' : 'text-rose-600'}>
                             ৳{mealData.netBalance.toLocaleString()}
-                        </span>
+                        </span> */}
                     </div>
                 </div>
             </div>

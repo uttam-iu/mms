@@ -67,21 +67,63 @@ export interface MemberDeposit {
   note?: string;
 }
 
+export interface BazarExpensesBreakdown{
+  date:string;
+  amount:number;
+  itemsDescription:string;
+  shoppedBy:{
+    fullName: string;
+    phone:string;
+    status:'active' | 'inactive';
+  };
+
+}
+
+export interface ExtraCostBreakdown{
+  billTitle:string;
+  description:string;
+  amount:number;
+}
+
+export interface LevelValue{
+  label:string;
+  value:number|string;
+}
+
+export interface MealBreakdown{
+  fullName:string;
+  phone:string;
+  meal:number;
+}
+
 export interface MonthlyMealData {
-  year: number;
-  monthId: string; // e.g. "january"
-  monthName: string; // e.g. "January"
-  daysInMonth: number;
+  activeMember: USER_TYPE[] |[],
+  baxarExpensesBreakdown:BazarExpensesBreakdown[] |[],
+  extraCostBreakdown:ExtraCostBreakdown[] |[],
+  houseCostBreakdown:LevelValue[] |[],
+  mealBreakdown:MealBreakdown[] |[],
+
+  cashInHand: number;
+  mealMembers: number;
   mealRate: number;
-  totalMeals: number;
   totalBazarCost: number;
+  totalDeposits: number;
   totalExtraCost: number;
   totalGrossCost: number;
-  totalDeposits: number;
-  netBalance: number;
-  activeMembers: MemberMealSummary[];
-  dailyMeals: DailyMealEntry[];
-  bazarExpenses: BazarExpense[];
-  extraExpenses: ExtraExpense[];
-  deposits: MemberDeposit[];
+  totalMeals: number;
+}
+
+export interface MemberWiseSummary {
+  userId:string;
+  fullName: string;
+  phone:string;
+  status:'active' | 'inactive' ;
+  grossTotal:number;
+  hasDue:boolean;
+  individualfixedShare: number;
+  mealConsumed:number;
+  mealCost:number;
+  netBalance:number;
+  perHeadextraCost:number;
+  totalDeposit:number;
 }
