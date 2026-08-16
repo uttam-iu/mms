@@ -1,0 +1,37 @@
+[
+    {
+        "userId": 1,
+        "phone": "01617630101",
+        "userName": "uttam@k.com",
+        "fullName": "Uttam Kumar",
+        "photoUrl": "https://github.com/shadcn.png"
+    },
+    {
+        "userId": 2,
+        "phone": "01671212534",
+        "userName": "sagor@k.com",
+        "fullName": "Assaduzzaman Sagor",
+        "photoUrl": "https://github.com/maxleiter.png"
+    },
+    {
+        "userId": 3,
+        "phone": "01671212533",
+        "userName": "shibly@k.com",
+        "fullName": "Shibly Mustafiz",
+        "photoUrl": "https://github.com/evilrabbit.png"
+    },
+    {
+        "userId": 4,
+        "phone": "01671212532",
+        "userName": "ariful@k.com",
+        "fullName": "Ariful Islam",
+        "photoUrl": "https://github.com/maxleiter.png"
+    },
+    {
+        "userId": 5,
+        "phone": "01671212531",
+        "userName": "junayed@k.com",
+        "fullName": "Junayed Fahim",
+        "photoUrl": "https://github.com/evilrabbit.png"
+    }
+]
