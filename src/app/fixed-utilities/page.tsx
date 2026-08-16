@@ -20,7 +20,7 @@ export default function FixedCostPage() {
     const { data: monthwiseFixedCost, isLoading, refetch } = useSocket<{ data: { fixedCosts: ExtraExpense[], activeMembers: number } }>('emit', 'fixed_utility_cost', {
         month,
         year,
-    });
+    }, undefined, { enabled: !!month && !!year });
 
     const [dialogProps, setDialogProps] = useState<{ type: 'ADD' | 'EDIT' | 'DELETE', row: ExtraExpense | null } | null>(null);
 

@@ -5,63 +5,94 @@ import { toast } from 'react-toastify';
 let socket: Socket | null = null;
 let reconnectToastId: string | number | null = null;
 let countdownInterval: NodeJS.Timeout | null = null;
-let currentDelaySec = 20; // 20s initial delay (increments by 20s on each attempt)
+let reconnectTimer: NodeJS.Timeout | null = null;
+const RECONNECT_DELAY_SEC = 10;
 
 const clearReconnectTimer = () => {
   if (countdownInterval) {
     clearInterval(countdownInterval);
     countdownInterval = null;
   }
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+};
+
+const dismissReconnectToast = () => {
   if (reconnectToastId) {
     toast.dismiss(reconnectToastId);
     reconnectToastId = null;
   }
 };
 
-const startReconnectCountdown = () => {
+const handleReconnectCycle = () => {
   clearReconnectTimer();
 
-  let secondsLeft = currentDelaySec;
-  reconnectToastId = toast.warn(`Reconnecting in ${secondsLeft}s...`, {
-    position: 'bottom-center',
-    autoClose: false,
-    closeOnClick: false,
-    draggable: false,
-  });
+  let secondsLeft = RECONNECT_DELAY_SEC;
+  if (!reconnectToastId || !toast.isActive(reconnectToastId)) {
+    reconnectToastId = toast.warn(`Connection lost. Reconnecting in ${secondsLeft}s...`, {
+      position: 'bottom-center',
+      autoClose: false,
+      closeOnClick: false,
+      draggable: false,
+    });
+  } else {
+    toast.update(reconnectToastId, {
+      render: `Connection lost. Reconnecting in ${secondsLeft}s...`,
+      type: 'warning',
+    });
+  }
 
   countdownInterval = setInterval(() => {
     secondsLeft -= 1;
     if (secondsLeft > 0) {
-      toast.update(reconnectToastId!, {
-        render: `Reconnecting in ${secondsLeft}s...`,
-      });
+      if (reconnectToastId) {
+        toast.update(reconnectToastId, {
+          render: `Connection lost. Reconnecting in ${secondsLeft}s...`,
+        });
+      }
     } else {
-      toast.update(reconnectToastId!, {
-        render: `Attempting to reconnect...`,
-      });
-      if (countdownInterval) clearInterval(countdownInterval);
-      // currentDelaySec += 20; // Increment delay for next attempt (20s -> 40s -> 60s...)
+      if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+      }
+      if (reconnectToastId) {
+        toast.update(reconnectToastId, {
+          render: 'Attempting to reconnect...',
+        });
+      }
     }
   }, 1000);
+
+  reconnectTimer = setTimeout(() => {
+    if (socket && !socket.connected) {
+      socket.connect();
+    }
+  }, RECONNECT_DELAY_SEC * 1000);
 };
 
 export const SOCKET_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL ||
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') 
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '');
 
 export const setupSocket = (): Socket => {
   const token = getJwtToken();
-  console.log('token:', token);
-  if (socket && socket?.connected) {
+  
+  if (socket) {
+    // If token has changed or socket disconnected, update auth token and attempt connection
+    if (token) {
+      socket.auth = { token };
+    }
+    if (!socket.connected && !socket.active) {
+      socket.connect();
+    }
     return socket;
   }
 
   socket = io(SOCKET_URL, {
-    autoConnect: false,
-    reconnection: true,
-    reconnectionDelay: 20000, // 1st retry after 20s (2nd attempt at 40s, etc.)
-    reconnectionDelayMax: 60000, // Cap at max delay if needed
-    randomizationFactor: 0, // Keeps exact linear increment (20s, 40s, 60s...)
+    autoConnect: true,
+    reconnection: false, // Handle reconnection manually with fixed 10s countdown delay
     transports: ['websocket', 'polling'],
     auth: {
       token: token || '',
@@ -72,26 +103,30 @@ export const setupSocket = (): Socket => {
   socket.on('connect', () => {
     console.log('[Socket.IO] Connected successfully. ID:', socket?.id);
     if (reconnectToastId) {
-      toast.success('Reconnected to server!', { position: 'bottom-center', autoClose: 3000 });
+      toast.dismiss(reconnectToastId);
+      reconnectToastId = null;
+      toast.success('Successfully connected to server!', {
+        position: 'bottom-center',
+        autoClose: 3000,
+      });
     }
     clearReconnectTimer();
-    currentDelaySec = 20; // Reset delay on successful connection
   });
 
   socket.on('connect_error', (err) => {
     console.warn('[Socket.IO] Connection Error:', err.message);
-    setTimeout(()=>{
-      socket?.connect()
-    }, 2000)
+    handleReconnectCycle();
   });
 
   socket.on('disconnect', (reason) => {
     console.log('[Socket.IO] Disconnected:', reason);
-    startReconnectCountdown();
-    if (reason === 'io server disconnect') {
-      // Reconnect manually if server forcibly disconnected
-      socket?.connect();
+    if (reason === 'io client disconnect') {
+      // Intentional disconnect by client
+      clearReconnectTimer();
+      dismissReconnectToast();
+      return;
     }
+    handleReconnectCycle();
   });
 
   return socket;
@@ -101,12 +136,22 @@ export const getSocket = (): Socket | null => {
   if (!socket) {
     return setupSocket();
   }
+  const token = getJwtToken();
+  if (token && socket.auth && typeof socket.auth === 'object') {
+    socket.auth.token = token;
+  }
+  if (!socket.connected && !socket.active) {
+    socket.connect();
+  }
   return socket;
 };
 
 export const disconnectSocket = (): void => {
   if (socket) {
+    clearReconnectTimer();
+    dismissReconnectToast();
     socket.disconnect();
     socket = null;
   }
 };
+

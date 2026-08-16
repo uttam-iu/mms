@@ -24,7 +24,7 @@ export default function MonthDetailPage() {
     const { data: dailyMealEntriesResp, isLoading, refetch } = useSocket<{ data: DailyMealEntriesRespType }>('emit', 'meal_matrix', {
         month,
         year,
-    });
+    }, undefined, { enabled: !!month && !!year });
 
     const getTitle = useCallback(() => {
         return `Meal Matrix (${initcap(month)} ${year})`;

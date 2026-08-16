@@ -6,6 +6,7 @@ import {
   Users,
   User,
   Coins,
+  MessageSquareText,
   Summary,
   Utensils,
   Handbag,
@@ -114,6 +115,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 href: '/deposit-collection',
                 icon: Coins,
                 isActive: pathname === '/deposit-collection' || pathname?.startsWith('/deposit-collection?'),
+              },
+              {
+                tooltip: 'Discussion',
+                label: 'Discussion',
+                href: '/discussion',
+                icon: MessageSquareText,
+                isActive: pathname === '/discussion' || pathname?.startsWith('/discussion?'),
               },
             ].map((item, idx) => {
               const IconComp = item.icon;

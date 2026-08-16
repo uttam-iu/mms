@@ -27,7 +27,7 @@ export default function MonthDetailPage() {
     const { data: bazarExpensesResp, isLoading, refetch } = useSocket<{ data: BazarExpenseResp }>('emit', 'bazar_expenses', {
         month,
         year,
-    });
+    }, undefined, { enabled: !!month && !!year });
 
     const getTitle = useCallback(() => {
         return `Bazar Expenses (${initcap(month || '')} ${year})`;

@@ -42,7 +42,7 @@ export default function DepositCollectionPage() {
     const { data: summaryResp, isLoading, refetch } = useSocket<{ data: DepositCollectionPageResp }>('emit', 'monthly_summary', {
         month,
         year,
-    });
+    }, undefined, { enabled: !!month && !!year });
 
     const summary = summaryResp?.data?.summary;
     const memberRows = React.useMemo(() => summaryResp?.data?.memberWiseSummary || [], [summaryResp?.data?.memberWiseSummary]);

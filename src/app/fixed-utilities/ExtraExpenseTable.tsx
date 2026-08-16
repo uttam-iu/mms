@@ -56,7 +56,7 @@ export const ExtraExpenseTable = ({
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/60 text-zinc-800 dark:text-zinc-200">
                         {isLoading || monthwiseFixedCostData?.length === 0 ? (
                             <tr>
-                                <td colSpan={7} className="p-4 text-center">
+                                <td colSpan={100} className="p-4 text-center">
                                     {isLoading ? <Loader /> : 'No data available'}
                                 </td>
                             </tr>

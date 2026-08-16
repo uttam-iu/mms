@@ -116,7 +116,7 @@ export const DatewiseSummaryTable = ({
                     <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/80">
                         {isLoading || dailyMealEntries?.length === 0 ? (
                             <tr>
-                                <td colSpan={memberMeta.length + 5} className="p-4 text-center">
+                                <td colSpan={100} className="p-4 text-center">
                                     {isLoading ? <Loader /> : 'No data available'}
                                 </td>
                             </tr>

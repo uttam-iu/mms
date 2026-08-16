@@ -33,7 +33,7 @@ export default function MonthDetailPage() {
     const { data: monthlySummaryResp, isLoading, refetch } = useSocket<{ data: MonthlySummaryRespType }>('emit', 'monthly_summary', {
         month,
         year,
-    });
+    }, undefined, { enabled: !!month && !!year });
     console.log(monthlySummaryResp)
 
     const [activeCardDialog, setActiveCardDialog] = useState<
