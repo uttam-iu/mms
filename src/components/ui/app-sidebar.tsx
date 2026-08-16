@@ -5,10 +5,7 @@ import * as React from 'react';
 import {
   Users,
   User,
-  Calendar,
-  ShoppingBag,
-  Receipt,
-  icons,
+  Coins,
   Summary,
   Utensils,
   Handbag,
@@ -27,27 +24,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import logoIcon from '../../../public/logo.png';
 import { useAppState } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
-import { useApiCall } from '@/hooks/useApiCall';
 import { setupSocket } from '@/lib/socket';
-
-interface MONTH_META {
-  monthId: string;
-  monthName: string;
-  monthIndex: number; // 0 to 11
-  icon: string;
-  colorClass: string;
-  bgClass: string;
-  isCurrentMonth: boolean;
-}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const ctx = useAppState();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   React.useEffect(() => {
     const socket = setupSocket();
@@ -122,6 +107,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 href: '/members',
                 icon: Users,
                 isActive: pathname === '/members' || pathname?.startsWith('/members?'),
+              },
+              {
+                tooltip: 'Deposit Collection',
+                label: 'Deposit Collection',
+                href: '/deposit-collection',
+                icon: Coins,
+                isActive: pathname === '/deposit-collection' || pathname?.startsWith('/deposit-collection?'),
               },
             ].map((item, idx) => {
               const IconComp = item.icon;
