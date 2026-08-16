@@ -10,6 +10,7 @@ import { useTitle } from '@/hooks/useTitle';
 import { useSocket } from '@/hooks/useSocket';
 import { useSearchParams } from 'next/navigation';
 import { AddFixedCostDialog } from './AddFixedCostDialog';
+import { MemberStatusDialog } from './MemberStatusDialog';
 
 export default function MembersPage() {
   const searchParams = useSearchParams();
@@ -38,6 +39,14 @@ export default function MembersPage() {
 
       {(dialogProps?.type === "UPDATE" || dialogProps?.type === 'ADD') && <EditMemberDialog type={dialogProps?.type || ''} row={dialogProps?.row || null} onCancel={() => setDialogProps(null)} refetch={refetch} />}
       {(dialogProps?.type === "COST") && <AddFixedCostDialog row={dialogProps?.row || null} onCancel={() => setDialogProps(null)} refetch={refetch} />}
+      {(dialogProps?.type === 'ACTIVATE' || dialogProps?.type === 'DEACTIVATE') && (
+        <MemberStatusDialog
+          type={dialogProps?.type || 'ACTIVATE'}
+          row={dialogProps?.row || null}
+          onCancel={() => setDialogProps(null)}
+          refetch={refetch}
+        />
+      )}
     </div>
   );
 }
