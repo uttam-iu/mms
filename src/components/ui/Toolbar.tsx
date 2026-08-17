@@ -46,7 +46,7 @@ export default function Toolbar({
 	};
 
 	return (
-		<div className="w-full h-[48px] bg-white dark:bg-zinc-950 sticky top-0 z-20 border-b border-zinc-200 dark:border-zinc-800 px-4 flex justify-between items-center">
+		<div className="w-full h-[48px] bg-white dark:bg-zinc-950 sticky top-0 z-20 border-b border-zinc-200 dark:border-zinc-800 pl-2 flex justify-between items-center">
 			<div className="flex items-center gap-3">
 				{children}
 				<div className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
