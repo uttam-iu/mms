@@ -11,6 +11,7 @@ import { useSocket } from '@/hooks/useSocket';
 import { useSearchParams } from 'next/navigation';
 import { AddFixedCostDialog } from './AddFixedCostDialog';
 import { MemberStatusDialog } from './MemberStatusDialog';
+import { ChangePasswordDialog } from './ChangePasswordDialog';
 
 export default function MembersPage() {
   const searchParams = useSearchParams();
@@ -21,7 +22,7 @@ export default function MembersPage() {
   });
   const memberList = memberListResp?.data || [];
 
-  const [dialogProps, setDialogProps] = React.useState<{ type: 'ADD' | 'UPDATE' | 'DELETE' | 'COST' | 'ACTIVATE' | 'DEACTIVATE', row?: USER_TYPE | null } | null>(null)
+  const [dialogProps, setDialogProps] = React.useState<{ type: 'ADD' | 'UPDATE' | 'DELETE' | 'COST' | 'ACTIVATE' | 'DEACTIVATE' | 'PASSWORD', row?: USER_TYPE | null } | null>(null)
 
   useTitle('House Members');
 
@@ -42,6 +43,13 @@ export default function MembersPage() {
       {(dialogProps?.type === 'ACTIVATE' || dialogProps?.type === 'DEACTIVATE') && (
         <MemberStatusDialog
           type={dialogProps?.type || 'ACTIVATE'}
+          row={dialogProps?.row || null}
+          onCancel={() => setDialogProps(null)}
+          refetch={refetch}
+        />
+      )}
+      {dialogProps?.type === 'PASSWORD' && (
+        <ChangePasswordDialog
           row={dialogProps?.row || null}
           onCancel={() => setDialogProps(null)}
           refetch={refetch}

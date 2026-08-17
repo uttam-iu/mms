@@ -1,8 +1,25 @@
 'use client';
 
 import { PiggyBank, Utensils, Wallet } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function SummaryCard() {
+export default function SummaryCard({ isLoading }: { isLoading?: boolean }) {
+    if (isLoading) {
+        return (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs flex items-center justify-between">
+                        <div className="space-y-2">
+                            <Skeleton className="h-3 w-32" />
+                            <Skeleton className="h-7 w-24" />
+                        </div>
+                        <Skeleton className="h-10 w-10 rounded-xl" />
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
     return <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs flex items-center justify-between">
             <div>

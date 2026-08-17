@@ -114,7 +114,7 @@ export const PersonwiseSummaryTable = ({ memberWiseSummary, mealRate, isLoading 
                             </tr>
                         ))}
                 </tbody>
-                <tfoot className="bg-zinc-100 dark:bg-zinc-800 font-bold border-t-2 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100">
+                {memberWiseSummary?.length > 0 && <tfoot className="bg-zinc-100 dark:bg-zinc-800 font-bold border-t-2 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100">
                     <tr>
                         <td className="p-1"></td>
                         <td className="p-1">Summary</td>
@@ -137,7 +137,7 @@ export const PersonwiseSummaryTable = ({ memberWiseSummary, mealRate, isLoading 
                         </td>
                         <td className="p-1 text-center text-xs font-normal text-zinc-500">Rate: ৳{mealRate?.toFixed(2)}</td>
                     </tr>
-                </tfoot>
+                </tfoot>}
             </table>
         </div>
     </div>

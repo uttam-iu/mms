@@ -213,7 +213,7 @@ export const DatewiseSummaryTable = ({
                             })
                         )}
                     </tbody>
-                    <tfoot className="bg-zinc-100 dark:bg-zinc-800 font-bold sticky bottom-0 border-t-2 border-zinc-300 dark:border-zinc-700">
+                    {dailyMealEntries?.length > 0 && <tfoot className="bg-zinc-100 dark:bg-zinc-800 font-bold sticky bottom-0 border-t-2 border-zinc-300 dark:border-zinc-700">
                         <tr>
                             <th className="p-1"></th>
                             <td colSpan={2} className="p-1 text-zinc-900 dark:text-zinc-100">
@@ -232,7 +232,7 @@ export const DatewiseSummaryTable = ({
                             </td>
                             <td className="p-1"></td>
                         </tr>
-                    </tfoot>
+                    </tfoot>}
                 </table>
             </div>
         </div>

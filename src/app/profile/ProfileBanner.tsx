@@ -1,9 +1,28 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Mail, Phone, ShieldCheck, Sparkles } from "lucide-react";
-
+import { Skeleton } from "@/components/ui/skeleton";
 import { USER_TYPE } from '@/types/user.types';
 
-export default function ProfileBanner({ profileData }: { profileData: USER_TYPE }) {
+export default function ProfileBanner({ profileData, isLoading }: { profileData?: USER_TYPE; isLoading?: boolean }) {
+    if (isLoading) {
+        return (
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs overflow-hidden">
+                <div className="h-36 bg-gradient-to-r from-teal-700/60 via-teal-600/60 to-teal-900/60 relative flex items-center justify-end px-4">
+                    <Skeleton className="h-6 w-60 rounded-full bg-white/20" />
+                </div>
+                <div className="px-6 pb-6 pt-0 relative flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 -mt-14">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left">
+                        <Skeleton className="h-24 w-24 rounded-full ring-4 ring-white dark:ring-zinc-900 shadow-md" />
+                        <div className="space-y-2 py-1">
+                            <Skeleton className="h-6 w-48 mx-auto sm:mx-0" />
+                            <Skeleton className="h-4 w-64 mx-auto sm:mx-0" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (<div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs overflow-hidden">
         {/* Decorative Cover Gradient */}
         <div className="h-36 bg-gradient-to-r from-teal-700 via-teal-600 to-teal-900 relative">
@@ -22,14 +41,6 @@ export default function ProfileBanner({ profileData }: { profileData: USER_TYPE 
                             {profileData?.fullName?.[0]}
                         </AvatarFallback>
                     </Avatar>
-                    {/* <button
-                        type="button"
-                        onClick={() => setIsEditProfileOpen(true)}
-                        className="absolute bottom-0 right-0 p-1.5 rounded-full bg-teal-700 text-white hover:bg-teal-800 shadow-md border border-white dark:border-zinc-900 cursor-pointer transition-transform hover:scale-110"
-                        title="Update profile picture"
-                    >
-                        <Camera size={13} />
-                    </button> */}
                 </div>
 
                 {/* Name & Role Details */}
@@ -50,8 +61,6 @@ export default function ProfileBanner({ profileData }: { profileData: USER_TYPE 
                     </p>
                 </div>
             </div>
-
-
         </div>
     </div>)
 }

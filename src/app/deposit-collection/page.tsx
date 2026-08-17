@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ArrowDownRight, ArrowUpRight, PiggyBank, Wallet, Trash2 } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, PiggyBank, Wallet, Trash2, ShoppingBag } from 'lucide-react';
 import { useTitle } from '@/hooks/useTitle';
 import { useSocket } from '@/hooks/useSocket';
 import { SummaryFilter } from '@/components/SummaryFilter';
@@ -13,6 +13,8 @@ import { useAppState } from '@/context/AppContext';
 import { getSocket } from '@/lib/socket';
 import { ApiResponse } from '@/types/user.types';
 import { DepositCollectionDialog, CollectionDialogType } from './DepositCollectionDialog';
+import Loader from '@/components/Loader';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface DepositCollectionPageResp {
     summary: MonthlyMealData;
@@ -105,6 +107,7 @@ export default function DepositCollectionPage() {
         });
     };
 
+    console.log(summary)
     const summaryCards = [
         // {
         //     title: 'Total Extra Cost',
@@ -113,33 +116,34 @@ export default function DepositCollectionPage() {
         //     icon: <Receipt size={16} className="text-violet-600" />,
         //     bg: 'bg-violet-50 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300',
         // },
-        // {
-        //     title: 'Total Bazar Cost',
-        //     value: `৳${(summary?.totalBazarCost ?? 0).toLocaleString()}`,
-        //     subtitle: 'Shopping and bazar spend',
-        //     icon: <ShoppingBag size={16} className="text-blue-600" />,
-        //     bg: 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
-        // },
+
         {
             title: 'Total House Cost',
-            value: `৳${(summary?.totalGrossCost ?? totals.totalBill).toLocaleString()}`,
+            value: `৳${(summary?.totalGrossCost || 0).toFixed(2)}`,
             subtitle: 'Meal + extra + individual share',
             icon: <Wallet size={16} className="text-teal-600" />,
             bg: 'bg-teal-50 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300',
         },
         {
+            title: 'Total Bazar+Extra Cost',
+            value: `৳${((summary?.totalBazarCost || 0) + (summary?.totalExtraCost || 0)).toFixed(2)}`,
+            subtitle: 'Shopping and bazar spend',
+            icon: <ShoppingBag size={16} className="text-blue-600" />,
+            bg: 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
+        },
+        {
             title: 'Total Collection',
-            value: `৳${(summary?.totalDeposits ?? totals.totalPaid).toLocaleString()}`,
+            value: `৳${(summary?.totalDeposits ?? 0).toFixed(2)}`,
             subtitle: 'Cash collected from members',
             icon: <PiggyBank size={16} className="text-emerald-600" />,
             bg: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300',
         },
         {
             title: 'Net Balance',
-            value: `৳${Math.abs(summary?.cashInHand ?? totals.totalNet).toLocaleString()}`,
-            subtitle: (summary?.cashInHand ?? totals.totalNet) >= 0 ? 'House surplus' : 'Outstanding due',
-            icon: (summary?.cashInHand ?? totals.totalNet) >= 0 ? <ArrowUpRight size={16} className="text-emerald-600" /> : <ArrowDownRight size={16} className="text-rose-600" />,
-            bg: (summary?.cashInHand ?? totals.totalNet) >= 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300',
+            value: `৳${(summary?.cashInHand || 0).toFixed(2)}`,
+            subtitle: (summary?.cashInHand || 0) >= 0 ? 'House surplus' : 'Outstanding due',
+            icon: (summary?.cashInHand || 0) >= 0 ? <ArrowUpRight size={16} className="text-emerald-600" /> : <ArrowDownRight size={16} className="text-rose-600" />,
+            bg: (summary?.cashInHand || 0) >= 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300',
         },
     ];
 
@@ -161,19 +165,32 @@ export default function DepositCollectionPage() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
-                    {summaryCards.map((card, idx) => (
-                        <div key={`${card.title}-${idx}`} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">{card.title}</span>
-                                <span className={`p-1.5 rounded-lg ${card.bg}`}>
-                                    {card.icon}
-                                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                    {isLoading ? (
+                        [1, 2, 3, 4].map((i) => (
+                            <div key={i} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <Skeleton className="h-3 w-28" />
+                                    <Skeleton className="h-7 w-7 rounded-lg" />
+                                </div>
+                                <Skeleton className="h-7 w-24" />
+                                <Skeleton className="h-3 w-36" />
                             </div>
-                            <div className="text-xl font-black text-zinc-900 dark:text-zinc-100">{card.value}</div>
-                            <p className="mt-2 text-[11px] text-zinc-500 dark:text-zinc-400">{card.subtitle}</p>
-                        </div>
-                    ))}
+                        ))
+                    ) : (
+                        summaryCards.map((card, idx) => (
+                            <div key={`${card.title}-${idx}`} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400">{card.title}</span>
+                                    <span className={`p-1.5 rounded-lg ${card.bg}`}>
+                                        {card.icon}
+                                    </span>
+                                </div>
+                                <div className="text-xl font-black text-zinc-900 dark:text-zinc-100">{card.value}</div>
+                                <p className="mt-2 text-[11px] text-zinc-500 dark:text-zinc-400">{card.subtitle}</p>
+                            </div>
+                        ))
+                    )}
                 </div>
 
                 <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs overflow-hidden">
@@ -184,133 +201,85 @@ export default function DepositCollectionPage() {
                         </span>
                     </div>
 
-                    {isLoading ? (
-                        <div className="p-12 text-center text-xs text-zinc-500">Loading deposit ledger...</div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-xs">
-                                <thead className="bg-zinc-50 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 font-semibold border-b border-zinc-200 dark:border-zinc-800">
-                                    <tr>
-                                        <th className="p-2">Member</th>
-                                        <th className="p-2 text-right">Individual</th>
-                                        <th className="p-2 text-right">Extra</th>
-                                        <th className="p-2 text-right">Meal</th>
-                                        <th className="p-2 text-right">Total Bill</th>
-                                        <th className="p-2 text-right">Paid</th>
-                                        <th className="p-2 text-right">Advance</th>
-                                        <th className="p-2 text-right">Balance</th>
-                                        <th className="p-2 text-right">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/60 text-zinc-800 dark:text-zinc-200">
-                                    {memberRows.map((member) => {
-                                        const paid = Number(member.totalDeposit || 0);
-                                        const balance = Number(member.netBalance || 0);
-                                        const advance = Math.max(0, paid - (Number(member.grossTotal || 0) - Number(member.totalDeposit || 0)));
-
-                                        return (
-                                            <tr key={member.userId} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors">
-                                                <td className="p-2">
-                                                    <div className="font-semibold text-zinc-900 dark:text-zinc-100">{member.fullName}</div>
-                                                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400">{member.phone}</div>
-                                                </td>
-                                                <td className="p-2 text-right font-medium">৳{(Number(member.individualfixedShare) || 0).toLocaleString()}</td>
-                                                <td className="p-2 text-right font-medium">৳{(Number(member.perHeadextraCost) || 0).toLocaleString()}</td>
-                                                <td className="p-2 text-right font-medium">৳{(Number(member.mealCost) || 0).toLocaleString()}</td>
-                                                <td className="p-2 text-right font-bold">৳{(Number(member.grossTotal) || 0).toLocaleString()}</td>
-                                                <td className="p-2 text-right font-medium text-emerald-600 dark:text-emerald-400">৳{paid.toLocaleString()}</td>
-                                                <td className="p-2 text-right font-medium text-cyan-600 dark:text-cyan-400">৳{advance.toLocaleString()}</td>
-                                                <td className={`p-2 text-right font-bold ${balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                                                    ৳{Math.abs(balance).toLocaleString()}
-                                                </td>
-                                                <td className="p-2 text-right">
-                                                    <Button
-                                                        type="button"
-                                                        size="sm"
-                                                        variant="outline"
-                                                        className="h-7 text-[10px] px-2 border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950"
-                                                        onClick={() => {
-                                                            setDialogType('individual');
-                                                            setDialogMember(member);
-                                                        }}
-                                                    >
-                                                        Collect
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                                <tfoot className="bg-zinc-50 dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-200 font-bold border-t border-zinc-200 dark:border-zinc-800">
-                                    <tr>
-                                        <td className="p-2">Total</td>
-                                        <td className="p-2 text-right">৳{totals.totalIndividual.toLocaleString()}</td>
-                                        <td className="p-2 text-right">৳{totals.totalExtra.toLocaleString()}</td>
-                                        <td className="p-2 text-right">৳{totals.totalMeal.toLocaleString()}</td>
-                                        <td className="p-2 text-right">৳{totals.totalBill.toLocaleString()}</td>
-                                        <td className="p-2 text-right text-emerald-600 dark:text-emerald-400">৳{totals.totalPaid.toLocaleString()}</td>
-                                        <td className="p-2 text-right text-cyan-600 dark:text-cyan-400">৳{Math.max(0, totals.totalPaid - totals.totalBill + totals.totalPaid).toLocaleString()}</td>
-                                        <td className="p-2 text-right">৳{Math.abs(totals.totalNet).toLocaleString()}</td>
-                                        <td className="p-2 text-right">-</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    )}
-                </div>
-
-                <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs overflow-hidden">
-                    <div className="p-3 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
-                        <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">Recent Collection Records</h2>
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
-                            {collectionRecords.length} Entries
-                        </span>
-                    </div>
-
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs">
                             <thead className="bg-zinc-50 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 font-semibold border-b border-zinc-200 dark:border-zinc-800">
                                 <tr>
                                     <th className="p-2">Member</th>
-                                    <th className="p-2">Type</th>
-                                    <th className="p-2 text-right">Amount</th>
-                                    <th className="p-2">Method</th>
-                                    <th className="p-2">Note</th>
-                                    <th className="p-2">Date</th>
-                                    {isAdmin && <th className="p-2 text-right">Action</th>}
+                                    <th className="p-2 text-right">Individual</th>
+                                    <th className="p-2 text-right">Extra</th>
+                                    <th className="p-2 text-right">Meal</th>
+                                    <th className="p-2 text-right">Total Bill</th>
+                                    <th className="p-2 text-right">Paid</th>
+                                    <th className="p-2 text-right">Advance</th>
+                                    <th className="p-2 text-right">Balance</th>
+                                    <th className="p-2 text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800/60 text-zinc-800 dark:text-zinc-200">
-                                {collectionRecords.map((record) => (
-                                    <tr key={record.id} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors">
-                                        <td className="p-2 font-medium">{record.memberName}</td>
-                                        <td className="p-2">
-                                            <span className="px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
-                                                {record.type}
-                                            </span>
-                                        </td>
-                                        <td className="p-2 text-right font-bold">৳{record.amount.toLocaleString()}</td>
-                                        <td className="p-2">{record.paymentMethod}</td>
-                                        <td className="p-2 text-zinc-600 dark:text-zinc-400">{record.note}</td>
-                                        <td className="p-2">{new Date(record.date).toLocaleDateString()}</td>
-                                        {isAdmin && (
-                                            <td className="p-2 text-right">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="h-7 text-[10px] px-2 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950"
-                                                    onClick={() => handleDeleteCollection(record.id)}
-                                                >
-                                                    <Trash2 size={12} className="mr-1" /> Delete
-                                                </Button>
+                                {
+                                    isLoading || memberRows?.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={100} className="p-4 text-center">
+                                                {isLoading ? <Loader /> : 'No data available'}
                                             </td>
-                                        )}
-                                    </tr>
-                                ))}
+                                        </tr>
+                                    ) : (
+                                        memberRows.map((member) => {
+                                            const paid = Number(member.totalDeposit || 0);
+                                            const balance = Number(member.netBalance || 0);
+                                            const advance = Math.max(0, paid - (Number(member.grossTotal || 0) - Number(member.totalDeposit || 0)));
+
+                                            return (
+                                                <tr key={member.userId} className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors">
+                                                    <td className="p-2">
+                                                        <div className="font-semibold text-zinc-900 dark:text-zinc-100">{member.fullName}</div>
+                                                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400">{member.phone}</div>
+                                                    </td>
+                                                    <td className="p-2 text-right font-medium">৳{(Number(member.individualfixedShare) || 0).toLocaleString()}</td>
+                                                    <td className="p-2 text-right font-medium">৳{(Number(member.perHeadextraCost) || 0).toLocaleString()}</td>
+                                                    <td className="p-2 text-right font-medium">৳{(Number(member.mealCost) || 0).toLocaleString()}</td>
+                                                    <td className="p-2 text-right font-bold">৳{(Number(member.grossTotal) || 0).toLocaleString()}</td>
+                                                    <td className="p-2 text-right font-medium text-emerald-600 dark:text-emerald-400">৳{paid.toLocaleString()}</td>
+                                                    <td className="p-2 text-right font-medium text-cyan-600 dark:text-cyan-400">৳{advance.toLocaleString()}</td>
+                                                    <td className={`p-2 text-right font-bold ${balance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                                        ৳{Math.abs(balance).toLocaleString()}
+                                                    </td>
+                                                    <td className="p-2 text-right">
+                                                        <Button
+                                                            type="button"
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="h-7 text-[10px] px-2 border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950"
+                                                            onClick={() => {
+                                                                setDialogType('individual');
+                                                                setDialogMember(member);
+                                                            }}
+                                                        >
+                                                            Collect
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        }))
+                                }
                             </tbody>
+                            {memberRows?.length > 0 && <tfoot className="bg-zinc-50 dark:bg-zinc-800/60 text-zinc-700 dark:text-zinc-200 font-bold border-t border-zinc-200 dark:border-zinc-800">
+                                <tr>
+                                    <td className="p-2">Total</td>
+                                    <td className="p-2 text-right">৳{totals.totalIndividual.toLocaleString()}</td>
+                                    <td className="p-2 text-right">৳{totals.totalExtra.toLocaleString()}</td>
+                                    <td className="p-2 text-right">৳{totals.totalMeal.toLocaleString()}</td>
+                                    <td className="p-2 text-right">৳{totals.totalBill.toLocaleString()}</td>
+                                    <td className="p-2 text-right text-emerald-600 dark:text-emerald-400">৳{totals.totalPaid.toLocaleString()}</td>
+                                    <td className="p-2 text-right text-cyan-600 dark:text-cyan-400">৳{Math.max(0, totals.totalPaid - totals.totalBill + totals.totalPaid).toLocaleString()}</td>
+                                    <td className="p-2 text-right">৳{Math.abs(totals.totalNet).toLocaleString()}</td>
+                                    <td className="p-2 text-right">-</td>
+                                </tr>
+                            </tfoot>}
                         </table>
                     </div>
+
                 </div>
             </div>
 

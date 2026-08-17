@@ -6,8 +6,6 @@ import PersonalInfo from './PersonalInfo';
 import PasswordChange from './PasswordChange';
 import { useTitle } from '@/hooks/useTitle';
 import { useSocket } from '@/hooks/useSocket';
-import Loader from '@/components/Loader';
-
 import { ApiResponse, USER_TYPE } from '@/types/user.types';
 
 export default function ProfilePage() {
@@ -16,14 +14,14 @@ export default function ProfilePage() {
 
   return (
     <div className="w-full bg-zinc-50/60 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans pb-6">
-      {isLoading || !profileResp?.data ? <Loader /> : <div className="max-w-5xl mx-auto px-4 pt-6 space-y-6">
-        <ProfileBanner profileData={profileResp?.data} />
-        <SummaryCard />
+      <div className="max-w-5xl mx-auto px-4 pt-6 space-y-6">
+        <ProfileBanner profileData={profileResp?.data} isLoading={isLoading} />
+        <SummaryCard isLoading={isLoading} />
         <div className="space-y-4">
-          <PersonalInfo profileData={profileResp?.data} refetch={refetch} />
-          <PasswordChange />
+          <PersonalInfo profileData={profileResp?.data} refetch={refetch} isLoading={isLoading} />
+          <PasswordChange isLoading={isLoading} />
         </div>
-      </div>}
+      </div>
     </div>
   );
 }

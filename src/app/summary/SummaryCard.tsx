@@ -2,12 +2,33 @@ import { initcap } from "@/lib/utils";
 import { MonthlyMealData } from "@/types/meal.types"
 import { ArrowDownRight, ArrowUpRight, DollarSign, PiggyBank, Receipt, ShoppingBag, TrendingUp, Users, Utensils, Wallet } from "lucide-react"
 import { useSearchParams } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const SummaryCard = ({ summary, setActiveCardDialog, isLoading }: { isLoading: boolean, summary?: MonthlyMealData, setActiveCardDialog: (dialog: 'totalCost' | 'totalMeal' | 'mealRate' | 'totalExtra' | 'bazarCost' | 'deposits' | 'netBalance') => void }) => {
     const searchParams = useSearchParams();
 
     const year = searchParams.get('year');
     const month = searchParams.get('month') || '';
+
+    if (isLoading) {
+        return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                    <div key={i} className="bg-white dark:bg-zinc-900 rounded-xl p-4 border border-zinc-200/80 dark:border-zinc-800 shadow-2xs space-y-3">
+                        <div className="flex items-center justify-between">
+                            <Skeleton className="h-3 w-28" />
+                            <Skeleton className="h-7 w-7 rounded-lg" />
+                        </div>
+                        <Skeleton className="h-7 w-24" />
+                        <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
+                            <Skeleton className="h-3 w-20" />
+                            <Skeleton className="h-3 w-20" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
 
     const SUMMARY_CARD_DATA = [
         {

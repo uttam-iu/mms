@@ -30,6 +30,7 @@ import logoIcon from '../../../public/logo.png';
 import { useAppState } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
 import { setupSocket } from '@/lib/socket';
+import { getMenuData } from '@/lib/menuData';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const ctx = useAppState();
@@ -39,6 +40,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const socket = setupSocket();
     socket.connect()
   }, []);
+
+  const menuItem = getMenuData(pathname)
 
   // const { isLoading, resp } = useApiCall<{ data: MONTH_META[] }>('menus', 'GET', {});
 
@@ -66,64 +69,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         <SidebarGroup>
           <SidebarMenu>
-            {[
-              {
-                tooltip: 'My Profile',
-                label: 'My Profile',
-                href: '/profile',
-                icon: User,
-                isActive: pathname === '/profile',
-              },
-              {
-                tooltip: 'Summary',
-                label: 'Summary',
-                href: '/summary',
-                icon: Summary,
-                isActive: pathname === '/summary' || pathname?.startsWith('/summary?'),
-              },
-              {
-                tooltip: 'Meal Matrix',
-                label: 'Meal Matrix',
-                href: '/meal-matrix',
-                icon: Utensils,
-                isActive: pathname === '/meal-matrix' || pathname?.startsWith('/meal-matrix?'),
-              },
-              {
-                tooltip: 'Bazar Expenses',
-                label: 'Bazar Expenses',
-                href: '/bazar-expenses',
-                icon: Handbag,
-                isActive: pathname === '/bazar-expenses' || pathname?.startsWith('/bazar-expenses?'),
-              },
-              {
-                tooltip: 'Fixed Utilities',
-                label: 'Fixed Utilities',
-                href: '/fixed-utilities',
-                icon: Settings,
-                isActive: pathname === '/fixed-utilities' || pathname?.startsWith('/fixed-utilities?'),
-              },
-              {
-                tooltip: 'Members Management',
-                label: 'House Members',
-                href: '/members',
-                icon: Users,
-                isActive: pathname === '/members' || pathname?.startsWith('/members?'),
-              },
-              {
-                tooltip: 'Deposit Collection',
-                label: 'Deposit Collection',
-                href: '/deposit-collection',
-                icon: Coins,
-                isActive: pathname === '/deposit-collection' || pathname?.startsWith('/deposit-collection?'),
-              },
-              {
-                tooltip: 'Discussion',
-                label: 'Discussion',
-                href: '/discussion',
-                icon: MessageSquareText,
-                isActive: pathname === '/discussion' || pathname?.startsWith('/discussion?'),
-              },
-            ].map((item, idx) => {
+            {menuItem?.map((item, idx) => {
               const IconComp = item.icon;
               return (
                 <SidebarMenuItem key={idx}>

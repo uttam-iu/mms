@@ -3,9 +3,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { displayFormattedDate } from "@/lib/utils"
 import { USER_TYPE } from "@/types/user.types"
-import { CheckCircle2, Coins, Pencil, UserPlus, Users, XCircle } from "lucide-react"
+import { CheckCircle2, Coins, KeyRound, Pencil, UserPlus, Users, XCircle } from "lucide-react"
 
-export const MemberTable = ({ memberList, isLoading, setDialogProps }: { memberList: USER_TYPE[], isLoading: boolean, setDialogProps: (dialogProps: { type: 'ADD' | 'UPDATE' | 'DELETE' | 'COST' | 'ACTIVATE' | 'DEACTIVATE', row?: USER_TYPE | null }) => void }) => {
+export const MemberTable = ({ memberList, isLoading, setDialogProps }: { memberList: USER_TYPE[], isLoading: boolean, setDialogProps: (dialogProps: { type: 'ADD' | 'UPDATE' | 'DELETE' | 'COST' | 'ACTIVATE' | 'DEACTIVATE' | 'PASSWORD', row?: USER_TYPE | null }) => void }) => {
 
     return <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200/80 dark:border-zinc-800 shadow-2xs overflow-hidden">
         <div className="p-2 border-b border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between">
@@ -149,7 +149,16 @@ export const MemberTable = ({ memberList, isLoading, setDialogProps }: { memberL
                                             </button>
 
                                             {/* Edit Button */}
-                                            <div className='flex gap-2'>
+                                            <div className='flex gap-1.5 flex-wrap justify-end'>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => setDialogProps({ type: 'PASSWORD', row: member })}
+                                                    className="h-6 text-[11px] font-medium px-2 cursor-pointer border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/50"
+                                                >
+                                                    <KeyRound size={11} className="mr-1" /> Password
+                                                </Button>
                                                 <Button
                                                     type="button"
                                                     variant="outline"

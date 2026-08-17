@@ -3,8 +3,9 @@ import { Input } from "@/components/ui/input";
 import { getSocket } from "@/lib/socket";
 import { AlertCircle, CheckCircle2, Lock, Loader2 } from "lucide-react";
 import React from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function PasswordChange() {
+export default function PasswordChange({ isLoading }: { isLoading?: boolean }) {
     const [loading, setLoading] = React.useState(false)
     const [passwordState, setPasswordState] = React.useState({
         currentPassword: '',
@@ -12,6 +13,32 @@ export default function PasswordChange() {
         confirmPassword: '',
     });
     const [passwordAlert, setPasswordAlert] = React.useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+    if (isLoading) {
+        return (
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 p-6 shadow-2xs space-y-6">
+                <div className="border-b border-zinc-100 dark:border-zinc-800 pb-3 space-y-2">
+                    <Skeleton className="h-5 w-56" />
+                    <Skeleton className="h-3 w-64" />
+                </div>
+                <div className="space-y-4 max-w-md">
+                    <div className="space-y-1">
+                        <Skeleton className="h-3 w-28" />
+                        <Skeleton className="h-9 w-full rounded-md" />
+                    </div>
+                    <div className="space-y-1">
+                        <Skeleton className="h-3 w-28" />
+                        <Skeleton className="h-9 w-full rounded-md" />
+                    </div>
+                    <div className="space-y-1">
+                        <Skeleton className="h-3 w-28" />
+                        <Skeleton className="h-9 w-full rounded-md" />
+                    </div>
+                    <Skeleton className="h-8 w-32 rounded-md" />
+                </div>
+            </div>
+        );
+    }
 
 
     // Handle Update Password
