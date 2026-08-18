@@ -2,6 +2,7 @@
 
 import { USER_TYPE } from '@/types/user.types';
 import { ChatTarget } from '@/types/chat.types';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface AppState {
@@ -27,6 +28,9 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialState: AppState = {
     user: null,
@@ -37,6 +41,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     title: '',
   }
   const [state, setState] = useState<AppState>(initialState);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (pathname !== '/') return;
+
+    const shouldRedirectToSummary = sessionStorage.getItem('shouldRedirectToSummary');
+    if (!shouldRedirectToSummary) return;
+
+    sessionStorage.removeItem('shouldRedirectToSummary');
+    router.replace('/summary');
+  }, [pathname, router]);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if (window.location.pathname === '/') {
+      sessionStorage.setItem('shouldRedirectToSummary', 'true');
+    }
+  }, []);
 
   const setUser = React.useCallback((user: USER_TYPE | null): void => {
     setState((prev) => (prev.user === user ? prev : { ...prev, user }));

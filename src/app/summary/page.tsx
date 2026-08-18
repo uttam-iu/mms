@@ -1,18 +1,18 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { MemberWiseSummary, MonthlyMealData } from '@/types/meal.types';
 import { useTitle } from '@/hooks/useTitle';
 import { SummaryFilter } from '../../components/SummaryFilter';
 import { SummaryCard } from './SummaryCard';
-import { TotalCostDialog } from './TotalCostDialog';
-import { CuttentMealRateDialog } from './CuttentMealRateDialog';
-import { TotalMealDialog } from './TotalMealDialog';
-import { TotalExtraCostDialog } from './TotalExtraCostDialog';
-import { BazarCostDialog } from './BazarCostDialog';
-import { NetBalanceDialog } from './NetBalanceDialog';
+// import { TotalCostDialog } from './TotalCostDialog';
+// import { CuttentMealRateDialog } from './CuttentMealRateDialog';
+// import { TotalMealDialog } from './TotalMealDialog';
+// import { TotalExtraCostDialog } from './TotalExtraCostDialog';
+// import { BazarCostDialog } from './BazarCostDialog';
+// import { NetBalanceDialog } from './NetBalanceDialog';
 import { PersonwiseSummaryTable } from './PersonwiseSummaryTable';
 import { initcap } from '@/lib/utils';
 import { useSocket } from '@/hooks/useSocket';
@@ -30,7 +30,7 @@ export default function MonthDetailPage() {
     const year = searchParams.get('year');
     const month = searchParams.get('month') || '';
 
-    const { data: monthlySummaryResp, isLoading, refetch } = useSocket<{ data: MonthlySummaryRespType }>('emit', 'monthly_summary', {
+    const { data: monthlySummaryResp, isLoading } = useSocket<{ data: MonthlySummaryRespType }>('emit', 'monthly_summary', {
         month,
         year,
     }, undefined, { enabled: !!month && !!year });
@@ -40,9 +40,11 @@ export default function MonthDetailPage() {
         'totalCost' | 'totalMeal' | 'mealRate' | 'totalExtra' | 'bazarCost' | 'deposits' | 'netBalance' | null
     >(null);
 
+    console.log(activeCardDialog)
+
     const getTitle = useCallback(() => {
         return `Monthly Summary (${initcap(month)} ${year})`;
-    }, [searchParams]);
+    }, [month, year]);
 
     useTitle(getTitle());
 

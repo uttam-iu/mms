@@ -16,6 +16,7 @@ import Dummy_Users from "@/dummyData/users.json";
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import Link from 'next/link';
 import { disconnectSocket } from '@/lib/socket';
+import { useRouter } from 'next/navigation';
 
 export default function Toolbar({
 	children,
@@ -25,24 +26,47 @@ export default function Toolbar({
 	showLogoutBtn?: boolean;
 }>) {
 	const ctx = useAppState();
+	const router = useRouter();
 
 	React.useEffect(() => {
+		if (typeof window === 'undefined') return;
+		if (window.location.pathname === '/login') return;
+
 		const cookies = new URLSearchParams(document.cookie.replaceAll('; ', '&'));
 		const userId = cookies?.get('user') || '';
 		const userIndb = Dummy_Users?.find(ec => ec?.userId?.toString() === userId?.toString()) || null;
+
 		if (userId && userIndb) {
 			ctx?.setUser?.(userIndb);
-		} else if (typeof window !== 'undefined' && !userId) {
-			window.location.replace('/login');
+			return;
 		}
-	}, [ctx]);
 
-	const onLogout = (): void => {
-		disconnectSocket();
-		ctx?.resetContext()
-		localStorage.removeItem('user');
-		document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
-		window.location.reload();
+		if (!ctx?.state?.user) {
+			router.replace('/login');
+		}
+	}, [ctx?.state?.user, router]);
+
+	const onLogout = async () => {
+		try {
+			const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '')}/user/logout`, {
+				method: 'POST',
+				credentials: 'include'
+			});
+
+			const data = await res.json();
+
+			if (data?.success) {
+				disconnectSocket();
+
+				ctx?.resetContext();
+				localStorage.removeItem('user');
+
+				window.location.href = "/login";
+			}
+		} catch (error) {
+			console.error("Logout failed:", error);
+		}
+
 	};
 
 	return (

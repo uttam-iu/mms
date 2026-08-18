@@ -1,7 +1,6 @@
 'use client'
 const MY_ACCOUNT = 'my-account';
 const RECEIVER_ACCOUNT = 'receiver-account';
-export const JWT_TOKEN = 'JWT_TOKEN';
 
 const setDataToLocalStorage = (name:string, value:string) => {
     localStorage.setItem(name, value);
@@ -39,29 +38,16 @@ const setReceiverAccount = (accData: Record<string, unknown>) => {
 const removeReceiverAccount = () => removeDataFromLocalStorage(RECEIVER_ACCOUNT);
 const removeMyAccout = () => removeDataFromLocalStorage(MY_ACCOUNT);
 
-const setJwtToken = (token:string) => {
-    setDataToLocalStorage(JWT_TOKEN, token);
-};
-
-const getJwtToken = () => {
-    return getDataFromLocalStorage(JWT_TOKEN);
-};
-
-const removeJwtToken = () => removeDataFromLocalStorage(JWT_TOKEN);
-
 export {
     MY_ACCOUNT,
     RECEIVER_ACCOUNT,
     getDataFromLocalStorage,
-    getJwtToken,
     getMyAccount,
     getReceiverAccount,
     removeDataFromLocalStorage,
-    removeJwtToken,
     removeMyAccout,
     removeReceiverAccount,
     setDataToLocalStorage,
-    setJwtToken,
     setMyAccount,
     setReceiverAccount
 };

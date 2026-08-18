@@ -3,16 +3,6 @@
 
 import * as React from 'react';
 import {
-  Users,
-  User,
-  Coins,
-  MessageSquareText,
-  Summary,
-  Utensils,
-  Handbag,
-  Settings,
-} from 'lucide-react';
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -29,21 +19,19 @@ import { usePathname } from 'next/navigation';
 import logoIcon from '../../../public/logo.png';
 import { useAppState } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
-import { setupSocket } from '@/lib/socket';
+// import { setupSocket } from '@/lib/socket';
 import { getMenuData } from '@/lib/menuData';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const ctx = useAppState();
   const pathname = usePathname();
 
-  React.useEffect(() => {
-    const socket = setupSocket();
-    socket.connect()
-  }, []);
+  // React.useEffect(() => {
+  //   const socket = setupSocket();
+  //   socket.connect()
+  // }, []);
 
   const menuItem = getMenuData(pathname)
-
-  // const { isLoading, resp } = useApiCall<{ data: MONTH_META[] }>('menus', 'GET', {});
 
   return (
     <Sidebar collapsible="icon" className="border-r border-zinc-200 dark:border-zinc-800" {...props}>

@@ -1,26 +1,27 @@
 'use client';
 
-import Link from "next/link";
 import { Eye, EyeOff, Lock, Mail, Loader2 } from "lucide-react";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import logoIcon from '../../../public/logo-white.png';
 import { useAppState } from '@/context/AppContext';
-import { setDataToLocalStorage, setJwtToken } from "@/lib/localStorageHelper";
+import { setDataToLocalStorage } from "@/lib/localStorageHelper";
 import { showToast } from "@/lib/utils";
-import axios from "axios";
+import { setupSocket } from "@/lib/socket";
+import { useRouter } from "next/navigation";
 
 export function LoginForm() {
   const ctx = useAppState();
+  const router = useRouter();
 
   const [showPassword, setShowPassword] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(false);
 
-  const onLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const onLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e?.preventDefault();
 
     const target = e.currentTarget?.elements as typeof e.currentTarget.elements & {
@@ -34,32 +35,30 @@ export function LoginForm() {
     setLoading(true);
     const apiPrms = { userName, password };
 
-    axios
-      .post(process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '') + '/user/login', apiPrms, {
-        withCredentials: true,
-      })
-      .then((res) => {
-        setLoading(false);
-        if (res?.data?.success) {
-          console.log(res?.data)
-          ctx?.setUser(res?.data?.data?.user)
-          setJwtToken(res?.data?.data?.token);
-          setDataToLocalStorage('userId', res?.data?.data?.user?.userId)
-          document.cookie = `auth_token=${res?.data?.data?.token}; path=/`;
-          document.cookie = `user=${res?.data?.data?.user?.userId}; path=/`;
-          document.cookie = 'max-age=86400; SameSite=Strict; path=/';
-          showToast('Login successful!', 'success');
-          window.location.reload()
-        } else {
-          showToast(res?.data?.message || 'Login failed.', 'error');
-          console.log(res?.data?.message);
-        }
-      })
-      .catch((err) => {
-        setLoading(false);
-        showToast('An error occurred during login.', 'error');
-        console.log('login-err', err);
-      });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL?.replace(/\/+$/, '')}/user/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(apiPrms),
+      credentials: 'include' // ব্যাকএন্ড থেকে কুকি এনে ব্রাউজারে সেভ করার জন্য এটি জরুরি
+    });
+
+    const data = await res.json();
+    setLoading(false)
+    if (data?.success) {
+      ctx?.setUser(data?.data?.user)
+      setDataToLocalStorage('userId', data?.data?.user?.userId)
+      showToast('Login successful!', 'success');
+      // window.location.reload()
+
+      setupSocket();
+      router.replace('/');
+
+    } else {
+      showToast(data?.message || 'Login failed.', 'error');
+      console.log(data?.message);
+    }
   };
 
   return (
