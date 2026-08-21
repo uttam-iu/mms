@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 import Link from 'next/link';
 import { disconnectSocket } from '@/lib/socket';
 import { useRouter } from 'next/navigation';
+import { removeDataFromLocalStorage } from '@/lib/localStorageHelper';
 
 export default function Toolbar({
 	children,
@@ -57,10 +58,8 @@ export default function Toolbar({
 
 			if (data?.success) {
 				disconnectSocket();
-
 				ctx?.resetContext();
-				localStorage.removeItem('user');
-
+				removeDataFromLocalStorage('user');
 				window.location.href = "/login";
 			}
 		} catch (error) {

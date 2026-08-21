@@ -2,7 +2,7 @@
 
 import { USER_TYPE } from '@/types/user.types';
 import { ChatTarget } from '@/types/chat.types';
-import { usePathname, useRouter } from 'next/navigation';
+// import { usePathname, useRouter } from 'next/navigation';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface AppState {
@@ -27,40 +27,24 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | null>(null);
 
-export function AppProvider({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-  const router = useRouter();
+const initialState: AppState = {
+  user: null,
+  theme: 'light',
+  activeChatTarget: null,
+  isChatOpen: false,
+  openChats: [],
+  title: '',
+}
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const initialState: AppState = {
-    user: null,
-    theme: 'light',
-    activeChatTarget: null,
-    isChatOpen: false,
-    openChats: [],
-    title: '',
-  }
+export function AppProvider({ children }: { children: ReactNode }) {
+  // const pathname = usePathname();
+  // const router = useRouter();
+
+
   const [state, setState] = useState<AppState>(initialState);
 
-  React.useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    if (pathname !== '/') return;
-
-    const shouldRedirectToSummary = sessionStorage.getItem('shouldRedirectToSummary');
-    if (!shouldRedirectToSummary) return;
-
-    sessionStorage.removeItem('shouldRedirectToSummary');
-    router.replace('/summary');
-  }, [pathname, router]);
-
-  React.useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    if (window.location.pathname === '/') {
-      sessionStorage.setItem('shouldRedirectToSummary', 'true');
-    }
-  }, []);
+  // ❌ পুরানো সেই ২টি useEffect (sessionStorage ও রিডাইরেক্ট লজিক) এখান থেকে সম্পূর্ণ রিমুভ করা হয়েছে।
+  // কারণ এই কাজটি এখন সার্ভার লেভেলে middleware.ts এবং page.tsx নিখুঁতভাবে করছে।
 
   const setUser = React.useCallback((user: USER_TYPE | null): void => {
     setState((prev) => (prev.user === user ? prev : { ...prev, user }));
@@ -126,7 +110,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const resetContext = React.useCallback(() => {
     setState(initialState)
-  }, [initialState])
+  }, [])
 
   const contextValue = React.useMemo(
     () => ({ resetContext, state, setUser, toggleTheme, setTitle, openChat, closeChat, updateActiveChatTarget }),
@@ -139,6 +123,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     </AppContext.Provider>
   );
 }
+
 
 export function useAppState() {
   const context = useContext(AppContext);

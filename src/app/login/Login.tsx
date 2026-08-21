@@ -48,13 +48,13 @@ export function LoginForm() {
     setLoading(false)
     if (data?.success) {
       ctx?.setUser(data?.data?.user)
-      setDataToLocalStorage('userId', data?.data?.user?.userId)
+      setDataToLocalStorage('user', JSON.stringify(data?.data?.user))
       showToast('Login successful!', 'success');
-      // window.location.reload()
 
       socketConnect();
-      router.replace('/');
-
+      const redirectUrl = new URLSearchParams(window.location.search).get('redirect_url');
+      router.replace(redirectUrl?.startsWith('/') && !redirectUrl.startsWith('//') ? redirectUrl : '/summary');
+      router.refresh();
     } else {
       showToast(data?.message || 'Login failed.', 'error');
       console.log(data?.message);

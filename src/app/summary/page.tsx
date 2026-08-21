@@ -34,13 +34,13 @@ export default function MonthDetailPage() {
         month,
         year,
     }, undefined, { enabled: !!month && !!year });
-    console.log(monthlySummaryResp)
+    // console.log(monthlySummaryResp)
 
     const [activeCardDialog, setActiveCardDialog] = useState<
         'totalCost' | 'totalMeal' | 'mealRate' | 'totalExtra' | 'bazarCost' | 'deposits' | 'netBalance' | null
     >(null);
 
-    console.log(activeCardDialog)
+    // console.log(activeCardDialog)
 
     const getTitle = useCallback(() => {
         return `Monthly Summary (${initcap(month)} ${year})`;
