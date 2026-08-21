@@ -11,7 +11,7 @@ import logoIcon from '../../../public/logo-white.png';
 import { useAppState } from '@/context/AppContext';
 import { setDataToLocalStorage } from "@/lib/localStorageHelper";
 import { showToast } from "@/lib/utils";
-import { setupSocket } from "@/lib/socket";
+import { socketConnect } from "@/lib/socket";
 import { useRouter } from "next/navigation";
 
 export function LoginForm() {
@@ -52,7 +52,7 @@ export function LoginForm() {
       showToast('Login successful!', 'success');
       // window.location.reload()
 
-      setupSocket();
+      socketConnect();
       router.replace('/');
 
     } else {
