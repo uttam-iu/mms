@@ -26,7 +26,6 @@ export function middleware(request: NextRequest) {
   return NextResponse.next()
 }
 
-// ৫. কোন কোন রাউটে এই মিডলওয়্যারটি কাজ করবে তা নির্দিষ্ট করুন
 export const config = {
   matcher: [
     '/((?!api|_next/static|_next/image|favicon.ico).*)',

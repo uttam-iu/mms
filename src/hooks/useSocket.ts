@@ -21,7 +21,7 @@ export function useSocket<T = unknown, P = unknown>(
     message: string | null;
     isError: boolean;
   }>({
-    isLoading: false,
+    isLoading: true,
     data: null,
     error: null,
     message: null,
